@@ -1,6 +1,9 @@
 VPMBench - A test bench for variant prioritization methods
 ==========================================================
 
+|docs|
+
+
 VPMBench automates the evaluation of variant prioritization methods by using a pipeline in which the methods are integrated as plugins.
 Thus, you can include new methods as plugins without changing the pipeline code.
 Stop reinventing the wheel by developing a bunch of R/Python/Bash scripts to evaluate your prioritization method and use VPMBench to focus your time on compiling suitable evaluation input data and interpreting the results.
@@ -61,7 +64,7 @@ Contribute
 
 - Source Code: https://github.com/IDEA-PRIO/VPMBench
 - Issue Tracker: https://github.com/IDEA-PRIO/VPMBench/issues
-- Documentation: https://google.de
+- Documentation: https://vpmbench.readthedocs.io/en/latest/
 
 Support
 -------
@@ -93,3 +96,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+
+.. |docs| image:: https://readthedocs.org/projects/vpmbench/badge/?version=latest
+    :alt: Documentation Status
+    :scale: 100%
+    :target: https://vpmbench.readthedocs.io/en/latest/?badge=latest
+
+
