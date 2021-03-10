@@ -1,0 +1,8 @@
+name: Depth-Plugin
+version: 0.1
+supported-variations: INDEL, SNP
+reference-genome: GRCh37/hg19
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py

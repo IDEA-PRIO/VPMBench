@@ -1,0 +1,26 @@
+name: fathmm-MKL (non-coding)
+version: 2017_02_03_GITHUB
+supported-variations: SNP
+reference-genome: GRCh37/hg19
+cutoff: 0.5
+databases:
+  - fathmm-MKL_Current.tab.gz: 2014_09_12
+
+entry-point:
+  mode: Docker
+  image: vpmbench/fathmm-non-coding
+  input:
+    file-path: /input.csv
+    format: CSV
+    args:
+      header: False
+  output:
+    file-path: /output.csv
+    format: CSV
+  bindings:
+    ../fathmm-MKL_Current.tab.gz: /fathmm-MKL/fathmm-MKL_Current.tab.gz
+    ../fathmm-MKL_Current.tab.gz.tbi: /fathmm-MKL/fathmm-MKL_Current.tab.gz.tbi
+  run: ./wrapper.sh /input.csv /output.csv
+
+
+

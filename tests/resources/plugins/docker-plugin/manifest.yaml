@@ -1,0 +1,21 @@
+name: Docker-Plugin
+version: 1.0
+supported-variations: SNP
+reference-genome: GRCh37/hg19
+
+entry-point:
+  mode: Docker
+  image: busybox
+  input:
+    file-path: /input.csv
+    format: CSV
+    args:
+      columns: [ UID,CHROM,POS,REF,ALT ]
+  output:
+    file-path: /output.csv
+    format: CSV
+    args:
+      merge_on: [ ]
+  run: sh -c "cat input.csv | awk -F ',' 'NR==1{print $1\",SCORE\"} NR>1{print $1 \",\" rand()}' > output.csv"
+
+cutoff: 0.5
