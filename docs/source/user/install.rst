@@ -108,6 +108,48 @@ After answering the questions, you will see an overview of the selected files be
 
     $ chmod +x install.sh
     $ ./install.sh
+    #####################################
+    Guided Installation for VPMBench-v0.1
+    #####################################
+
+    The following questions will guide you through selecting the files and dependencies needed for VPMBench.
+    After this, you will see an overview before the download and installation starts.
+
+    Where do you want to store the plugins? [~/VPMBench-Plugins]
+    Do you want to test if Docker works? (y)/n
+    > Assuming YES.
+
+    Do you want to copy the provided plugin to /home/andreas/VPMBench-Plugins? (y)/n
+    > Assuming YES.
+
+    Do you want to install the provided plugins (Warning: Might take a while)? (y)/n
+    > Assuming YES.
+
+    Do you want to install CADD (~ 200GB, Warning: Sometimes the installation seems to fail for no obvious reasons)? (y)/n
+    > Assuming YES.
+
+    Do you want to fathmm-MKL (~80GB)? (y)/n
+    > Assuming YES.
+
+    Do you want to do a test run after the installation? (y)/n
+    > Assuming YES.
+
+
+    Summary
+    ========
+    * Plugin Path: /home/andreas/VPMBench-Plugins
+    * Test Docker: true
+    * Copy provided plugins: true
+    * Install provided plugins: true
+      - Install CADD: true
+      - Install fathmm-MKL: true
+      - Test run: true
+    Please make sure you have enough disk space available to install the plugins.
+    Please make sure you have the rights to run docker and install python packages!
+
+
+    Ready to continue? (y)/n
+
 
 The complete installation with the two provided plugins for CADD and fathmm-MKL might take 2-3h and uses about 300GB of your disk space.
 So it's enough time to drink a coffee or two.
@@ -183,6 +225,44 @@ The output should look like this:
 .. code-block:: console
 
     $ python /bin/after_install.py tests/resources/test_grch37.vcf ~/VPMBench-Plugins
-    .....
-    .....
-    .....
+    #### Run pipeline
+    - Starting time: 10/03/2021 13:15:49
+    #### Extract data from tests/resources/test_grch37.vcf
+    - Used extractor: <class 'vpmbench.extractor.ClinVarVCFExtractor'>!
+    - Extracted Data:
+    -    UID CHROM       POS REF ALT    RG TYPE
+    0    0     1    865568   G   A  hg19  snp
+    1    1     1    949738   C   T  hg19  snp
+    2    2     1    949739   G   A  hg19  snp
+    3    3     1    955597   G   T  hg19  snp
+    4    4     1    955601   C   T  hg19  snp
+    5    5     1  20416314   G   T  hg19  snp
+    6    6     1  20978410   T   C  hg19  snp
+    7    7     1  20978956   G   A  hg19  snp
+    8    8     1  20978971   C   T  hg19  snp
+    #### Load plugins from ../VPMBench-Plugins
+    - Absolute plugin path: /home/arusch/extern/VPMBench-Plugins
+    - Found 3 plugins: ['fathmm-MKL (coding)', 'fathmm-MKL (non-coding)', 'CADD']
+    - Returning 3 filtered plugins: ['fathmm-MKL (coding)', 'fathmm-MKL (non-coding)', 'CADD']
+    #### Invoke methods
+    - #CPUs: 11
+    - Invoke method: CADD
+    - Invoke method: fathmm-MKL (coding)
+    - Invoke method: fathmm-MKL (non-coding)
+    - Finish method: fathmm-MKL (non-coding)
+    - Finish method: fathmm-MKL (coding)
+    - Finish method: CADD
+    #### Calculate reports
+    - Calculate Specificity
+    - Calculate Sensitivity
+    #### Stop pipeline
+    - Finishing time: 10/03/2021 13:16:07
+    Sensitivity
+    - fathmm-MKL (coding): 0.75
+    - fathmm-MKL (non-coding): 0.5
+    - CADD: 0.75
+    Specificity
+    - fathmm-MKL (coding): 0.0
+    - fathmm-MKL (non-coding): 0.6
+    - CADD: 0.0
+
