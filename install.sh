@@ -201,7 +201,7 @@ if [ "$COPY_PLUGINS" = true ]; then
 fi
 
 echo "> Install python package"
-pip install --user --ignore-installed .
+sudo pip install --ignore-installed .
 
 if [ "$TEST_RUN" = true ]; then
   python $BASEDIR/bin/after_install.py $BASEDIR/tests/resources/test_grch37.vcf $PLUGIN_PATH

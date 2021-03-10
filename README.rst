@@ -34,6 +34,8 @@ Look how easy it is to use:
     # Plot the summaries and report the metrics
     plot_confusion_matrices(report)
     plot_roc_curves(report)
+    report_metrics(report)
+
 
 Features
 --------

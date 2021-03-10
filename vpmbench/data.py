@@ -92,8 +92,8 @@ class EvaluationData:
 
             * CHROM has to be in ``{"1",...,"22","X","Y"}``
             * POS has to be ``> 1``
-            * REF has to match with ``re.compile("^[ACGTN]+$")``
-            * ALT has to match with ``re.compile("^[ACGTN*]+$")``
+            * REF has to match with ``re.compile("^[ACGT]+$")``
+            * ALT has to match with ``re.compile("^[ACGT]+$")``
             * RG has to be of type :class:`vpmbench.enums.ReferenceGenome`
             * CLASS has to be of type :class:`vpmbench.enums.PathogencityClass`
             * TYPE has to be of type :class:`vpmbench.enums.VariationType`
@@ -105,8 +105,8 @@ class EvaluationData:
             If the validation of the data fails
         """
         chroms = set([str(x) for x in range(1, 23)] + ["X", "Y"])
-        ref_validator = re.compile("^[ACGTN]+$")
-        alt_validator = re.compile("^[ACGTN*]+$")
+        ref_validator = re.compile("^[ACGT]+$")
+        alt_validator = re.compile("^[ACGT]+$")
         schema = DataFrameSchema({
             "CHROM": Column(String, Check(lambda chrom: chrom in chroms, element_wise=True), required=True),
             "POS": Column(Int, Check(lambda pos: pos >= 1), required=True),
