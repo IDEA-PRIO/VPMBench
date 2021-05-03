@@ -99,3 +99,30 @@ class AreaUnderTheCurveROC(PerformanceMetric):
     @staticmethod
     def name():
         return "Area under the Curve ROC"
+
+
+class Concordance(PerformanceMetric):
+    @staticmethod
+    def name():
+        return "Concordance"
+
+    @staticmethod
+    def calculate(score: Score, interpreted_classes: Series) -> float:
+        """ Calculate the Concordance.
+
+        Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the concordance.
+
+        Parameters
+        ----------
+        score :
+            The score from the plugin
+        interpreted_classes :
+            The interpreted classes
+
+        Returns
+        -------
+        float
+            The concordane
+        """
+        confusion_matrix = ConfusionMatrix().calculate(score, interpreted_classes)
+        return confusion_matrix["tp"] + confusion_matrix["tn"]
