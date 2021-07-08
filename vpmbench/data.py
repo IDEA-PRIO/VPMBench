@@ -106,7 +106,7 @@ class EvaluationData:
         """
         chroms = set([str(x) for x in range(1, 23)] + ["X", "Y","MT"])
         ref_validator = re.compile("^[ACGT]+$")
-        alt_validator = re.compile("^[ACGT]+$")
+        alt_validator = re.compile("^[ACGTN]+$")
         schema = DataFrameSchema({
             "CHROM": Column(String, Check(lambda chrom: chrom in chroms, element_wise=True), required=True),
             "POS": Column(Int, Check(lambda pos: pos >= 1), required=True),
