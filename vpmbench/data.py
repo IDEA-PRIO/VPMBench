@@ -104,7 +104,7 @@ class EvaluationData:
         :class:`~pandera.errors.SchemaErrors`
             If the validation of the data fails
         """
-        chroms = set([str(x) for x in range(1, 23)] + ["X", "Y"])
+        chroms = set([str(x) for x in range(1, 23)] + ["X", "Y","MT"])
         ref_validator = re.compile("^[ACGT]+$")
         alt_validator = re.compile("^[ACGT]+$")
         schema = DataFrameSchema({
