@@ -80,18 +80,18 @@ class ClinVarVCFExtractor(Extractor):
     @classmethod
     def _extract(cls, file_path: Union[str, Path]) -> EvaluationData:
         records = []
-        vcf_reader = Reader(open(file_path, "r"))
+        vcf_reader = Reader(open(file_path, "r"),encoding="latin-1", strict_whitespace=True)
         for vcf_record in vcf_reader:
             chrom = str(vcf_record.CHROM)
             pos = vcf_record.POS
             ref = vcf_record.REF
             alt = (vcf_record.ALT[0] if len(vcf_record.ALT) == 1 else vcf_record.ALT).sequence
-            clnsig = PathogencityClass(vcf_record.INFO["CLNSIG"][0].lower())
+            vcf_clnsig = vcf_record.INFO["CLNSIG"][0].lower()
+            clnsig = PathogencityClass.resolve(vcf_clnsig)
             variation_type = VariationType(vcf_record.var_type)
             rg = ReferenceGenome.resolve(vcf_reader.metadata["reference"])
             records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
         return EvaluationData.from_records(records)
-
 
 class VariSNPExtractor(Extractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
