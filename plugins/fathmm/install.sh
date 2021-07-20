@@ -7,16 +7,6 @@ echo "INSTALLING fathmm-MKL"
 echo "====================="
 echo ""
 
-echo "> Build Docker Images"
-cd $BASEDIR/non-coding
-docker build -t vpmbench/fathmm-non-coding .
-
-cd ..
-
-cd $BASEDIR/coding
-docker build -t vpmbench/fathmm-coding .
-cd ..
-
 echo "> Download Files (Approx. 80GB)"
 wget http://fathmm.biocompute.org.uk/database/fathmm-MKL_Current.tab.gz
 
