@@ -2,11 +2,11 @@ import re
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from pandera import DataFrameSchema, Column, Int, Check, String
 
 from vpmbench.enums import PathogencityClass, VariationType, ReferenceGenome
-from vpmbench.plugin import Plugin
+from vpmbench.plugin import Score
 
 
 @dataclass
@@ -104,7 +104,7 @@ class EvaluationData:
         :class:`~pandera.errors.SchemaErrors`
             If the validation of the data fails
         """
-        chroms = set([str(x) for x in range(1, 23)] + ["X", "Y","MT"])
+        chroms = set([str(x) for x in range(1, 23)] + ["X", "Y", "MT"])
         ref_validator = re.compile("^[ACGT]+$")
         alt_validator = re.compile("^[ACGTN]+$")
         schema = DataFrameSchema({
@@ -151,52 +151,6 @@ class EvaluationData:
 
 
 @dataclass
-class Score:
-    """Represent a score from a prioritization method.
-
-    Arguments
-    ---------
-    plugin
-        The method calculated the score
-    data
-        The calculated scores
-    """
-    plugin: Plugin
-    data: Series
-
-    @property
-    def cutoff(self):
-        """Get the cutoff from the plugin of the score.
-
-        Returns
-        -------
-        float
-            The cutoff
-        """
-        return self.plugin.cutoff
-
-    def interpret(self, cutoff: float = None) -> Series:
-        """ Interpret the score using the cutoff.
-
-        If the cutoff is None the :meth:`vpmbench.data.Score.cutoff` is used to interpret the score.
-        The score is interpreted by replacing all values greater as the cutoff by 1, 0 otherwise.
-
-        Parameters
-        ----------
-        cutoff
-            The cutoff
-
-        Returns
-        -------
-        :class:`pandas.Series`
-            The interpreted scores
-        """
-        if cutoff is None:
-            cutoff = self.cutoff
-        return self.data.apply(lambda value: 1 if value > cutoff else 0)
-
-
-@dataclass
 class AnnotatedVariantData:
     """ Represent the variant data annotated with the scores from the prioritization methods.
 
@@ -210,11 +164,11 @@ class AnnotatedVariantData:
         The plugins used to calculate the scores
     """
     annotated_variant_data: DataFrame
-    plugins: List[Plugin]
+    plugins: List['Plugin']
 
     @staticmethod
     def from_results(original_variant_data: DataFrame,
-                     plugin_results: List[Tuple[Plugin, DataFrame]]) -> 'AnnotatedVariantData':
+                     plugin_results: List[Tuple['Plugin', DataFrame]]) -> 'AnnotatedVariantData':
         """ Create annotated variant data from the original variant data and plugin results.
 
         The annotated variant data is created by merging the plugin scores on the UID column.

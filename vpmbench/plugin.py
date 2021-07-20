@@ -7,7 +7,7 @@ from typing import Union, List
 
 import docker
 from docker.types import Mount
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pandera import DataFrameSchema, Column, Float, Check, Int
 
 from vpmbench import log
@@ -162,6 +162,9 @@ class Plugin:
     name: str
     version: str
     supported_variations: List[VariationType]
+    supported_chromosomes: List[str]
+    supported_reference_allels = []
+    supported_alternative_allels = []
     reference_genome: ReferenceGenome
     databases: List[str]
     entry_point: EntryPoint
@@ -245,7 +248,7 @@ class Plugin:
     def __hash__(self) -> int:
         return self.name.__hash__()
 
-    def is_compatible_with_data(self, variant_information_table: DataFrame):
+    def is_compatible_with_data(self, variant_information_table: Union['EvaluationData', DataFrame]):
         """ Check if the plugin is compatible with the variant information table.
 
         The following constraints are checked:
@@ -263,13 +266,28 @@ class Plugin:
         RuntimeError
             If the validation fails
         """
+        from vpmbench.data import EvaluationData
+        if isinstance(variant_information_table, EvaluationData):
+            return self.is_compatible_with_data(variant_information_table.variant_data)
+
         variant_rgs = variant_information_table["RG"].unique()
         if not all([rg == self.reference_genome for rg in variant_rgs]):
             raise RuntimeError(
-                f"Plugin '{self.name} can't be executed: Reference genome of method not compatible data!")
-        if not set(variant_information_table["TYPE"].unique()).issubset(set(self.supported_variations)):
+                f"Plugin '{self.name}' is not compatible with data: Reference genome of method not compatible data!")
+
+        variant_types = set(variant_information_table["TYPE"].unique())
+        supported_variation_types = set(self.supported_variations)
+        if not variant_types.issubset(supported_variation_types):
             raise RuntimeError(
-                f"Plugin '{self.name} can't be executed: Supported variation type of method not compatible data!")
+                f"Plugin '{self.name}' is not compatible with data: Supported variation type of method not compatible data! "
+                f"Method does not support the following variantion types found in data: {variant_types - supported_variation_types}")
+
+        variant_chroms = set(variant_information_table["CHROM"].unique())
+        supported_chroms = set(self.supported_chromosomes)
+        if not variant_chroms.issubset(supported_chroms):
+            raise RuntimeError(
+                f"Plugin '{self.name}' is not compatible with data: Data contains unsupported chromosomes! "
+                f"Method does not support the following chromosomes found in data: {variant_chroms - supported_chroms}")
 
 
 class PluginBuilder:
@@ -313,8 +331,12 @@ class PluginBuilder:
         version = kwargs.get("version", None)
         databases = kwargs.get("databases", [])
         cutoff = kwargs.get("cutoff", 0.5)
-        p = Plugin(name, version, supported_variations, reference_genome, databases, entry_point, cutoff,
-                      manifest_path)
+        supported_chromosomes = kwargs.get("supported-chromosomes", [str(x) for x in range(1, 23)] + ["X", "Y", "MT"])
+        unsupported_chromsomes = kwargs.get("unsupported-chromosomes", [])
+        supported_chromosomes = set(supported_chromosomes) - set(unsupported_chromsomes)
+        p = Plugin(name, version, supported_variations, supported_chromosomes, reference_genome, databases, entry_point,
+                   cutoff,
+                   manifest_path)
         return p
 
     @classmethod
@@ -385,5 +407,52 @@ class PluginBuilder:
         manifest_path = manifest["path"]
         entry_point_file = Path(manifest_path).parent.joinpath(entry_point["file"]).resolve()
         if not entry_point_file.exists():
-            raise RuntimeError(f"Can't build entry point for plugin {manifest['name']}: Entry point file {entry_point_file} does not exist")
+            raise RuntimeError(
+                f"Can't build entry point for plugin {manifest['name']}: Entry point file {entry_point_file} does not exist")
         return PythonEntryPoint(entry_point_file)
+
+
+@dataclass
+class Score:
+    """Represent a score from a prioritization method.
+
+    Arguments
+    ---------
+    plugin
+        The method calculated the score
+    data
+        The calculated scores
+    """
+    plugin: Plugin
+    data: Series
+
+    @property
+    def cutoff(self):
+        """Get the cutoff from the plugin of the score.
+
+        Returns
+        -------
+        float
+            The cutoff
+        """
+        return self.plugin.cutoff
+
+    def interpret(self, cutoff: float = None) -> Series:
+        """ Interpret the score using the cutoff.
+
+        If the cutoff is None the :meth:`vpmbench.data.Score.cutoff` is used to interpret the score.
+        The score is interpreted by replacing all values greater as the cutoff by 1, 0 otherwise.
+
+        Parameters
+        ----------
+        cutoff
+            The cutoff
+
+        Returns
+        -------
+        :class:`pandas.Series`
+            The interpreted scores
+        """
+        if cutoff is None:
+            cutoff = self.cutoff
+        return self.data.apply(lambda value: 1 if value > cutoff else 0)
