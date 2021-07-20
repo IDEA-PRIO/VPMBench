@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Type, Union, Callable, Any, List, Tuple, Dict, Optional
@@ -83,7 +84,13 @@ def load_plugins(plugin_path: Union[str, Path], plugin_selection: Optional[Calla
     log.info(f"Load plugins from {plugin_path}")
     plugin_path = Path(plugin_path).resolve().absolute()
     log.debug(f"Absolute plugin path: {plugin_path}")
-    found_plugins = [load_plugin(manifest) for manifest in plugin_path.glob("*/**/manifest.yaml")]
+    found_plugins = []
+    for manifest in plugin_path.glob("*/**/manifest.yaml"):
+        try:
+            plugin = load_plugin(manifest)
+            found_plugins.append(plugin)
+        except Exception as e:
+            warnings.warn(f"Can't load plugin from {manifest}: {e} ")
     log.debug(f"Found {len(found_plugins)} plugins: {[plugin.name for plugin in found_plugins]}")
     if filter:
         filtered_plugins = list(filter(plugin_selection, found_plugins))
@@ -217,7 +224,8 @@ def run_pipeline(with_data: Union[str, Path],
                  extractor: Type[Extractor] = ClinVarVCFExtractor,
                  plugin_path: Union[str, Path] = DEFAULT_PLUGIN_PATH, cpu_count: int = -1) -> PerformanceReport:
     log.info("Run pipeline")
-    log.debug(f'Starting time: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+    start_time = datetime.now()
+    log.debug(f'Starting time: {start_time.strftime("%d/%m/%Y %H:%M:%S")}')
     evaluation_data: EvaluationData = extract_evaluation_data(with_data, extractor)
     plugins: List[Plugin] = load_plugins(plugin_path, using)
     if len(plugins) == 0:
@@ -225,7 +233,9 @@ def run_pipeline(with_data: Union[str, Path],
     annotated_variants: AnnotatedVariantData = invoke_methods(plugins, evaluation_data.variant_data, cpu_count)
     reports = calculate_metrics_and_summaries(annotated_variants, evaluation_data, reporting)
     log.info("Stop pipeline")
-    log.debug(f'Finishing time: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+    end_time = datetime.now()
+    log.debug(f'Finishing time: {end_time.strftime("%d/%m/%Y %H:%M:%S")}')
+    log.debug(f'Pipeline took {(end_time-start_time).seconds}')
 
     report = PerformanceReport(evaluation_data, annotated_variants, reports)
     return report
