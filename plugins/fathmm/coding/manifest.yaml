@@ -1,11 +1,25 @@
 name: fathmm-MKL (coding)
 version: 2017_02_03_GITHUB
-supported-variations: SNP
 reference-genome: GRCh37/hg19
+
+supported-variations:
+  - SNP
+unsupported-chromosomes:
+  - MT
+supported-reference-allels:
+  - A
+  - C
+  - G
+  - T
+supported-alternative-allels:
+  - A
+  - C
+  - G
+  - T
+
 cutoff: 0.5
 databases:
   - fathmm-MKL_Current.tab.gz: 2014_09_12
-
 
 entry-point:
   mode: Python

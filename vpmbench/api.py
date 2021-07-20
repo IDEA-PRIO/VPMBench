@@ -17,6 +17,11 @@ from vpmbench.report import PerformanceReport
 from vpmbench.summaries import PerformanceSummary
 
 
+def is_plugin_compatible_with_data(plugin: Plugin, data: EvaluationData):
+    plugin.is_compatible_with_data(data.variant_data)
+    return True
+
+
 def extract_evaluation_data(evaluation_data_path: Union[str, Path],
                             extractor: Type[Extractor] = ClinVarVCFExtractor) -> EvaluationData:
     """ Extract the EvaluationData from the evaluation input data.
@@ -235,7 +240,7 @@ def run_pipeline(with_data: Union[str, Path],
     log.info("Stop pipeline")
     end_time = datetime.now()
     log.debug(f'Finishing time: {end_time.strftime("%d/%m/%Y %H:%M:%S")}')
-    log.debug(f'Pipeline took {(end_time-start_time).seconds}')
+    log.debug(f'Pipeline took {(end_time - start_time).seconds}')
 
     report = PerformanceReport(evaluation_data, annotated_variants, reports)
     return report
