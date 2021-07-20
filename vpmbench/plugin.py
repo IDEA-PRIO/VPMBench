@@ -45,11 +45,16 @@ class EntryPoint(ABC):
 class DockerEntryPoint(EntryPoint):
     """ Represent an entry point using Docker to run the custom processing logic
 
-    Parameters --------- image The name of the Docker image used to create a Docker container run_command The command
-    that invokes the custom processing logic in the Docker container input Information about the ``file-path`` and
-    ``format`` of the input file. output Information about the ``file-path`` and ``format`` of the output file.
-    bindings Additional bindings that should be mounted for Docker container. Keys: local file paths, Values: remote
-    file paths
+    Parameters
+    ---------
+    image
+        The name of the Docker image used to create a Docker container
+    run_command
+        The command that invokes the custom processing logic in the Docker container input Information about the ``file-path`` and ``format`` of the input file.
+    output
+        Information about the ``file-path`` and ``format`` of the output file.
+    bindings
+        Additional bindings that should be mounted for Docker container. Keys: local file paths, Values: remote file paths
     """
     image: str
     run_command: str
@@ -109,12 +114,13 @@ class PythonEntryPoint(EntryPoint):
     ----------
     file_path
         Path the Python file containing the implementation of the custom processing logic
-
+    plugin
+        Reference to the plugin of the entry point
     """
     file_path: Path
 
     def run(self, variant_information_table: Path) -> DataFrame:
-        spec = spec_from_file_location("my.module", self.file_path)
+        spec = spec_from_file_location(__name__, self.file_path)
         module = module_from_spec(spec)
         spec.loader.exec_module(module)
         return module.entry_point(variant_information_table)
@@ -209,7 +215,7 @@ class Plugin:
         return score_table.rename(columns={"SCORE": self.score_column_name})
 
     @staticmethod
-    def _validate_score_table(variant_information_table:DataFrame, score_table:DataFrame):
+    def _validate_score_table(variant_information_table: DataFrame, score_table: DataFrame):
         """ Validate the results of the prioritization method.
 
         The following constraints are checked:
@@ -232,7 +238,7 @@ class Plugin:
         """
         variants_uid = variant_information_table["UID"]
         schema = DataFrameSchema({
-            "UID": Column(Int,Check(lambda x: variants_uid.isin(x) & x.isin(variants_uid)), required=True),
+            "UID": Column(Int, Check(lambda x: variants_uid.isin(x) & x.isin(variants_uid)), required=True),
             "SCORE": Column(Float, coerce=True, required=True)})
         schema.validate(score_table, lazy=True)
 
@@ -270,6 +276,7 @@ class PluginBuilder:
     """ This class builds the :class:`Plugins <vpmbench.plugin.Plugin>`
 
     """
+
     @classmethod
     def build_plugin(cls, **kwargs) -> Plugin:
         """ Build a plugin from the arguments.
@@ -306,8 +313,9 @@ class PluginBuilder:
         version = kwargs.get("version", None)
         databases = kwargs.get("databases", [])
         cutoff = kwargs.get("cutoff", 0.5)
-        return Plugin(name, version, supported_variations, reference_genome, databases, entry_point, cutoff,
+        p = Plugin(name, version, supported_variations, reference_genome, databases, entry_point, cutoff,
                       manifest_path)
+        return p
 
     @classmethod
     def validate_mandatory_keys(cls, manifest: dict):
@@ -366,7 +374,8 @@ class PluginBuilder:
         for local_path, remote_path in entry_point.get("bindings", {}).items():
             local_path = Path(manifest_path).parent.joinpath(local_path).resolve()
             if not local_path.exists():
-                raise RuntimeError(f"Cant build entry point: Specified file {local_path} does not exist!")
+                raise RuntimeError(
+                    f"Cant build entry point for plugin {manifest['name']}: Specified file {local_path} does not exist!")
             bindings[local_path.as_posix()] = remote_path
         return DockerEntryPoint(image_name, run_command, input_info, output_info, bindings)
 
@@ -376,5 +385,5 @@ class PluginBuilder:
         manifest_path = manifest["path"]
         entry_point_file = Path(manifest_path).parent.joinpath(entry_point["file"]).resolve()
         if not entry_point_file.exists():
-            raise RuntimeError(f"Can't build entry point: Can't entry point file {entry_point_file} does not exist")
+            raise RuntimeError(f"Can't build entry point for plugin {manifest['name']}: Entry point file {entry_point_file} does not exist")
         return PythonEntryPoint(entry_point_file)
