@@ -6,16 +6,6 @@ supported-variations:
   - SNP
 unsupported-chromosomes:
   - MT
-supported-reference-allels:
-  - A
-  - C
-  - G
-  - T
-supported-alternative-allels:
-  - A
-  - C
-  - G
-  - T
 
 cutoff: 0.5
 databases:

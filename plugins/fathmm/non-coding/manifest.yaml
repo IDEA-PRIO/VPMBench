@@ -6,16 +6,6 @@ supported-variations:
   - SNP
 unsupported-chromosomes:
   - MT
-supported-reference-allels:
-  - A
-  - C
-  - G
-  - T
-supported-alternative-allels:
-  - A
-  - C
-  - G
-  - T
 
 databases:
   - fathmm-MKL_Current.tab.gz: 2014_09_12

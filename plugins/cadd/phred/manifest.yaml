@@ -4,6 +4,9 @@ supported-variations: SNP
 reference-genome: GRCh37/hg19
 cutoff: 15
 
+unsupported-chromosomes:
+  - MT
+
 entry-point:
   mode: Docker
   image: vpmbench/cadd
