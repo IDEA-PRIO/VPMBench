@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from pandera.typing import Series
-from sklearn.metrics import confusion_matrix, roc_curve
+from sklearn.metrics import confusion_matrix, roc_curve, precision_recall_curve
 
 from vpmbench.data import Score
 
@@ -73,3 +73,30 @@ class ROCCurve(PerformanceSummary):
     @staticmethod
     def name():
         return "ROC Curve"
+
+
+class PrecisionRecallCurve(PerformanceSummary):
+    @staticmethod
+    def calculate(score: Score, interpreted_classes: Series) -> dict:
+        """ Calculates the precision recall curve.
+
+        Parameters
+        ----------
+        score :
+            The score from the prioritization method
+        interpreted_classes :
+            The interpreted classes
+
+        Returns
+        -------
+        dict
+            A dictionary with the following keys: ``fpr``- false positive rates, ``tpr`` - true positives rates,
+            ``thresholds`` - the thresholds
+
+        """
+        precision, recall, thresholds = precision_recall_curve(interpreted_classes, score.data)
+        return {'precision': precision, "tpr": recall, "thresholds": thresholds}
+
+    @staticmethod
+    def name():
+        return "Precision-Recall Curve"
