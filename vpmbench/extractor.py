@@ -63,7 +63,7 @@ class Extractor(ABC):
         """
         try:
             table = cls._extract(file_path)
-        except Exception:
+        except Exception as e:
             raise RuntimeError(
                 f"Can't parse data at '{file_path}' with '{cls.__name__}'. \nMaybe the data does not exist, or is not "
                 f"compatible with the Extractor.\n If the data exists use absolute path.")
@@ -80,7 +80,12 @@ class ClinVarVCFExtractor(Extractor):
     @classmethod
     def _extract(cls, file_path: Union[str, Path]) -> EvaluationData:
         records = []
-        vcf_reader = Reader(open(file_path, "r"),encoding="latin-1", strict_whitespace=True)
+        file_name = file_path
+        try:
+            file_name = file_name.resolve()
+        except Exception:
+            pass
+        vcf_reader = Reader(filename=file_name, encoding="latin-1", strict_whitespace=True)
         for vcf_record in vcf_reader:
             chrom = str(vcf_record.CHROM)
             pos = vcf_record.POS
@@ -92,6 +97,7 @@ class ClinVarVCFExtractor(Extractor):
             rg = ReferenceGenome.resolve(vcf_reader.metadata["reference"])
             records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
         return EvaluationData.from_records(records)
+
 
 class VariSNPExtractor(Extractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
@@ -118,7 +124,7 @@ class VariSNPExtractor(Extractor):
     def _extract(cls, file_path: Union[str, Path]) -> EvaluationData:
         records = []
         with open(file_path, "r") as csv_file:
-            csv_reader = csv.DictReader(csv_file,delimiter="\t")
+            csv_reader = csv.DictReader(csv_file, delimiter="\t")
             for row in csv_reader:
                 records.append(cls._build_entry(row))
         return EvaluationData.from_records(records)
