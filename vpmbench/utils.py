@@ -6,7 +6,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from vpmbench.metrics import PerformanceMetric
+from vpmbench.metrics import PerformanceMetric, AreaUnderTheCurveROC
 from vpmbench.report import PerformanceReport
 from vpmbench.summaries import ConfusionMatrix, ROCCurve, PrecisionRecallCurve
 
@@ -30,8 +30,12 @@ def plot_roc_curves(report: PerformanceReport):
     plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
+    auroc = report.metrics_and_summaries.get(AreaUnderTheCurveROC.name(), {})
     for plugin, result in roc_curves.items():
-        plt.plot(result["fpr"], result["tpr"], label=plugin.name)
+        label = f"{plugin.name}"
+        if plugin in auroc:
+            label += f" (AUROC: {auroc[plugin]})"
+        plt.plot(result["fpr"], result["tpr"], label=label)
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
     plt.title('ROC curve')

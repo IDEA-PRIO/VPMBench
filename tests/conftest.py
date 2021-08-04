@@ -14,8 +14,18 @@ def varisnp_path():
 
 
 @pytest.fixture()
+def custom_varisnp_path():
+    return (Path(__file__) / "../resources/custom_varisnp_10.csv").resolve()
+
+
+@pytest.fixture()
 def grch37_vcf_path():
     return (Path(__file__) / "../resources/test_grch37.vcf").resolve()
+
+
+@pytest.fixture()
+def custom_grch37_vcf_path():
+    return (Path(__file__) / "../resources/custom_test_grch37.vcf").resolve()
 
 
 @pytest.fixture()

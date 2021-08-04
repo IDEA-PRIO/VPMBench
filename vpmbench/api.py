@@ -23,7 +23,7 @@ def is_plugin_compatible_with_data(plugin: Plugin, data: EvaluationData):
 
 
 def extract_evaluation_data(evaluation_data_path: Union[str, Path],
-                            extractor: Type[Extractor] = ClinVarVCFExtractor) -> EvaluationData:
+                            extractor: Union[Extractor, Type[Extractor]] = ClinVarVCFExtractor) -> EvaluationData:
     """ Extract the EvaluationData from the evaluation input data.
 
     Parses the evaluation the evaluation input data given by the `evaluation_data_path` using the `extractor`.
@@ -41,6 +41,10 @@ def extract_evaluation_data(evaluation_data_path: Union[str, Path],
         The evaluation data extracted from `evaluation_input_data` using the `extractor`
 
     """
+    try:
+        extractor = extractor()
+    except Exception as e:
+        pass
     log.info(f"Extract data from {evaluation_data_path} ")
     log.debug(f"Used extractor: {extractor}!")
     return extractor.extract(evaluation_data_path)
