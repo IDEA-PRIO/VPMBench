@@ -66,7 +66,7 @@ class Extractor(ABC):
             pass
         try:
             table = self._extract(extraction_path)
-        except Exception as e:
+        except Exception:
             raise RuntimeError(
                 f"Can't parse data at '{file_path}' with '{self.__name__}'. \nMaybe the data does not exist, or is not "
                 f"compatible with the Extractor.\n If the data exists use absolute path.")
@@ -90,26 +90,6 @@ class CSVExtractor(Extractor):
         return EvaluationData.from_records(records)
 
 
-class ClinVarVCFExtractor(Extractor):
-    """ An implementation of an :class:`~vpmbench.extractor.Extractor` for ClinVarVCF files.
-    """
-
-    def _extract(cls, file_path: str) -> EvaluationData:
-        records = []
-        vcf_reader = Reader(filename=file_path, encoding="latin-1", strict_whitespace=True)
-        for vcf_record in vcf_reader:
-            chrom = str(vcf_record.CHROM)
-            pos = vcf_record.POS
-            ref = vcf_record.REF
-            alt = (vcf_record.ALT[0] if len(vcf_record.ALT) == 1 else vcf_record.ALT).sequence
-            vcf_clnsig = vcf_record.INFO["CLNSIG"][0].lower()
-            clnsig = PathogencityClass.resolve(vcf_clnsig)
-            variation_type = VariationType(vcf_record.var_type)
-            rg = ReferenceGenome.resolve(vcf_reader.metadata["reference"])
-            records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
-        return EvaluationData.from_records(records)
-
-
 class VariSNPExtractor(CSVExtractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
     """
@@ -129,3 +109,33 @@ class VariSNPExtractor(CSVExtractor):
         ref = data_row['reference_allele']
         return EvaluationDataEntry(chrom, pos, ref, alt, PathogencityClass.BENIGN, VariationType.SNP,
                                    ReferenceGenome.HG38)
+
+
+class VCFExtractor(Extractor):
+
+    @abstractmethod
+    def _extract_pathogencity_class_from_record(self, vcf_record) -> PathogencityClass:
+        raise NotImplementedError
+
+    def _extract(self, file_path: str) -> EvaluationData:
+        records = []
+        vcf_reader = Reader(filename=file_path, encoding="latin-1", strict_whitespace=True)
+        for vcf_record in vcf_reader:
+            chrom = str(vcf_record.CHROM)
+            pos = vcf_record.POS
+            ref = vcf_record.REF
+            alt = (vcf_record.ALT[0] if len(vcf_record.ALT) == 1 else vcf_record.ALT).sequence
+            clnsig = self._extract_pathogencity_class_from_record(vcf_record)
+            variation_type = VariationType(vcf_record.var_type)
+            rg = ReferenceGenome.resolve(vcf_reader.metadata["reference"])
+            records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
+        return EvaluationData.from_records(records)
+
+
+class ClinVarVCFExtractor(VCFExtractor):
+    """ An implementation of an :class:`~vpmbench.extractor.Extractor` for ClinVarVCF files.
+    """
+
+    def _extract_pathogencity_class_from_record(self, vcf_record) -> PathogencityClass:
+        vcf_clnsig = vcf_record.INFO["CLNSIG"][0].lower()
+        return PathogencityClass.resolve(vcf_clnsig)
