@@ -15,9 +15,8 @@ class Extractor(ABC):
 
     """
 
-    @classmethod
     @abstractmethod
-    def _extract(cls, file_path: Union[str, Path]) -> EvaluationData:
+    def _extract(self, file_path: str) -> EvaluationData:
         """ Internal function to extract the evaluation data from the evaluation input file at `file-path`.
 
         This function has to be implemented for every extractor.
@@ -34,8 +33,7 @@ class Extractor(ABC):
         """
         raise NotImplementedError
 
-    @classmethod
-    def extract(cls, file_path: Union[str, Path]) -> EvaluationData:
+    def extract(self, file_path: Union[str, Path]) -> EvaluationData:
         """ Extract the :class:`~vpmbench.data.EvaluationData` from the file at `file_path`.
 
         This function calls :meth:`~vpmbench.extractor.Extractor._extract` and uses
@@ -61,11 +59,16 @@ class Extractor(ABC):
             If the validation of the extracted data fails
 
         """
+        extraction_path = file_path
         try:
-            table = cls._extract(file_path)
+            extraction_path = str(extraction_path.resolve())
+        except Exception:
+            pass
+        try:
+            table = self._extract(extraction_path)
         except Exception as e:
             raise RuntimeError(
-                f"Can't parse data at '{file_path}' with '{cls.__name__}'. \nMaybe the data does not exist, or is not "
+                f"Can't parse data at '{file_path}' with '{self.__name__}'. \nMaybe the data does not exist, or is not "
                 f"compatible with the Extractor.\n If the data exists use absolute path.")
         log.debug("Extracted Data:")
         log.debug(table.variant_data.head(10))
@@ -77,15 +80,9 @@ class ClinVarVCFExtractor(Extractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for ClinVarVCF files.
     """
 
-    @classmethod
-    def _extract(cls, file_path: Union[str, Path]) -> EvaluationData:
+    def _extract(cls, file_path: str) -> EvaluationData:
         records = []
-        file_name = file_path
-        try:
-            file_name = file_name.resolve()
-        except Exception:
-            pass
-        vcf_reader = Reader(filename=file_name, encoding="latin-1", strict_whitespace=True)
+        vcf_reader = Reader(filename=file_path, encoding="latin-1", strict_whitespace=True)
         for vcf_record in vcf_reader:
             chrom = str(vcf_record.CHROM)
             pos = vcf_record.POS
@@ -103,8 +100,7 @@ class VariSNPExtractor(Extractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
     """
 
-    @classmethod
-    def _build_entry(cls, data_row) -> EvaluationDataEntry:
+    def _build_entry(self, data_row) -> EvaluationDataEntry:
         hgvs_name = data_row['hgvs_names'].split(";")[0]
         chrom_number = int(hgvs_name.split(":")[0][3:9])
         chrom = None
@@ -120,11 +116,10 @@ class VariSNPExtractor(Extractor):
         return EvaluationDataEntry(chrom, pos, ref, alt, PathogencityClass.BENIGN, VariationType.SNP,
                                    ReferenceGenome.HG38)
 
-    @classmethod
-    def _extract(cls, file_path: Union[str, Path]) -> EvaluationData:
+    def _extract(self, file_path: str) -> EvaluationData:
         records = []
         with open(file_path, "r") as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter="\t")
             for row in csv_reader:
-                records.append(cls._build_entry(row))
+                records.append(self._build_entry(row))
         return EvaluationData.from_records(records)
