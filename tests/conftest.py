@@ -4,6 +4,9 @@ import pytest
 
 from vpmbench.api import load_plugin
 from vpmbench.extractor import ClinVarVCFExtractor
+from vpmbench.metrics import PerformanceMetric
+from vpmbench.summaries import PerformanceSummary
+
 
 @pytest.fixture()
 def varisnp_path():
@@ -63,3 +66,13 @@ def docker_plugin_path(plugin_path):
 @pytest.fixture
 def docker_plugin(docker_plugin_path):
     return load_plugin(docker_plugin_path)
+
+@pytest.fixture
+def available_metrics():
+    metrics =  PerformanceMetric.__subclasses__()
+    return metrics
+
+@pytest.fixture
+def available_summaries():
+    summaries =  PerformanceSummary.__subclasses__()
+    return summaries
