@@ -90,12 +90,12 @@ class PrecisionRecallCurve(PerformanceSummary):
         Returns
         -------
         dict
-            A dictionary with the following keys: ``fpr``- false positive rates, ``tpr`` - true positives rates,
+            A dictionary with the following keys: ``precsion``- precision values, ``recall`` - recall values,
             ``thresholds`` - the thresholds
 
         """
         precision, recall, thresholds = precision_recall_curve(interpreted_classes, score.data)
-        return {'precision': precision, "tpr": recall, "thresholds": thresholds}
+        return {'precision': precision, "recall": recall, "thresholds": thresholds}
 
     @staticmethod
     def name():

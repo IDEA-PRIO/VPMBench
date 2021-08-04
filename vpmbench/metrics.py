@@ -76,13 +76,6 @@ class Accuracy(PerformanceMetric):
         return "Accuracy"
 
 
-class Recall(Sensitivity):
-
-    @staticmethod
-    def name():
-        return "Recall"
-
-
 class Precision(PerformanceMetric):
     @staticmethod
     def calculate(score: Score, interpreted_classes: Series) -> float:
@@ -108,34 +101,6 @@ class Precision(PerformanceMetric):
     @staticmethod
     def name():
         return "Precision"
-
-
-class Recall(PerformanceMetric):
-    @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
-        """ Calculate the recall.
-
-        Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the recall/positive predictive value.
-
-        Parameters
-        ----------
-        score :
-            The score from the plugin
-        interpreted_classes :
-            The interpreted classes
-
-        Returns
-        -------
-        float
-            The calculated precision
-        """
-        confusion_matrix = ConfusionMatrix().calculate(score, interpreted_classes)
-        return confusion_matrix["tp"] / (confusion_matrix["tp"] + confusion_matrix["fp"])
-
-    @staticmethod
-    def name():
-        return "Precision"
-
 
 
 class NegativePredictiveValue(PerformanceMetric):
@@ -220,7 +185,7 @@ class Concordance(PerformanceMetric):
 
 
 class AreaUnderTheCurveROC(PerformanceMetric):
-    """ Calculate the area under the roc curve (AUC).
+    """ Calculate the area under the roc curve (AUROC).
 
     Parameters
     ----------
@@ -247,7 +212,8 @@ class AreaUnderTheCurveROC(PerformanceMetric):
 class MatthewsCorrelationCoefficient(PerformanceMetric):
     @staticmethod
     def calculate(score: Score, interpreted_classes: Series) -> float:
-        """ Calculate the concordance, i.e, the sum of true positives and true negatives.
+        """ Calculate the matthews correlation coefficient.
+.
 
         Parameters
         ----------

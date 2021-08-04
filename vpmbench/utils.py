@@ -8,7 +8,7 @@ import numpy as np
 
 from vpmbench.metrics import PerformanceMetric
 from vpmbench.report import PerformanceReport
-from vpmbench.summaries import ConfusionMatrix, ROCCurve
+from vpmbench.summaries import ConfusionMatrix, ROCCurve, PrecisionRecallCurve
 
 
 def plot_roc_curves(report: PerformanceReport):
@@ -20,7 +20,6 @@ def plot_roc_curves(report: PerformanceReport):
     ----------
     report :
         The performance report
-
     """
     if ROCCurve.name() not in report.metrics_and_summaries:
         return
@@ -105,7 +104,6 @@ def report_metrics(report: PerformanceReport):
     ----------
     report :
         The performance report
-
     """
     metric_names = [cls.name() for cls in PerformanceMetric.__subclasses__()]
     for metric_name in metric_names:
@@ -114,3 +112,30 @@ def report_metrics(report: PerformanceReport):
         print(f"{metric_name}")
         for plugin, value in report.metrics_and_summaries[metric_name].items():
             print(f"- {plugin.name}: {value}")
+
+
+def plot_precision_recall_curves(report: PerformanceReport):
+    """ Plot the precision recall curves using a performance report
+
+    Shows the precision recall curve the :class:`vpmbench.summaries.PrecisionRecallCurve` was calculated.
+
+    Parameters
+    ----------
+    report :
+        The performance report
+    """
+    if PrecisionRecallCurve.name() not in report.metrics_and_summaries:
+        return
+    precision_recall_curves: dict = report.metrics_and_summaries[PrecisionRecallCurve.name()]
+    mpl.rcParams['figure.dpi'] = 600
+
+    plt.figure()
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.0])
+    for plugin, result in precision_recall_curves.items():
+        plt.plot(result["recall"], result["precision"], label=plugin.name)
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curves')
+    plt.legend(loc='best')
+    plt.show()
