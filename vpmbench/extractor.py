@@ -66,10 +66,10 @@ class Extractor(ABC):
             pass
         try:
             table = self._extract(extraction_path)
-        except Exception:
+        except Exception as ex:
             raise RuntimeError(
-                f"Can't parse data at '{file_path}' with '{self.__name__}'. \nMaybe the data does not exist, or is not "
-                f"compatible with the Extractor.\n If the data exists use absolute path.")
+                f"Can't parse data at '{file_path}' with '{self.__class__.__name__}'. \nMaybe the data does not exist, or is not "
+                f"compatible with the Extractor.\n If the data exists use absolute path.") from ex
         log.debug("Extracted Data:")
         log.debug(table.variant_data.head(10))
         table.validate()
@@ -77,22 +77,31 @@ class Extractor(ABC):
 
 
 class CSVExtractor(Extractor):
-    @abstractmethod
+
+    def __init__(self, row_to_entry_func=None, **kwargs) -> None:
+        super().__init__()
+        self.row_to_entry_func = self._row_to_evaluation_data_entry if row_to_entry_func is None else row_to_entry_func
+        self.csv_reader_args = kwargs
+
     def _row_to_evaluation_data_entry(self, data_row) -> EvaluationDataEntry:
         raise NotImplementedError()
 
     def _extract(self, file_path: str) -> EvaluationData:
         records = []
         with open(file_path, "r") as csv_file:
-            csv_reader = csv.DictReader(csv_file, delimiter="\t")
+            csv_reader = csv.DictReader(csv_file, **self.csv_reader_args)
             for row in csv_reader:
-                records.append(self._row_to_evaluation_data_entry(row))
+                records.append(self.row_to_entry_func(row))
         return EvaluationData.from_records(records)
 
 
 class VariSNPExtractor(CSVExtractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
     """
+
+    def __init__(self, row_to_entry_func=None, **kwargs) -> None:
+        super().__init__(row_to_entry_func, **kwargs)
+        self.csv_reader_args = {'delimiter': '\t'}
 
     def _row_to_evaluation_data_entry(self, data_row) -> EvaluationDataEntry:
         hgvs_name = data_row['hgvs_names'].split(";")[0]
