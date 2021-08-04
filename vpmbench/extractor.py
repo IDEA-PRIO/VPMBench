@@ -76,6 +76,20 @@ class Extractor(ABC):
         return table
 
 
+class CSVExtractor(Extractor):
+    @abstractmethod
+    def _row_to_evaluation_data_entry(self, data_row) -> EvaluationDataEntry:
+        raise NotImplementedError()
+
+    def _extract(self, file_path: str) -> EvaluationData:
+        records = []
+        with open(file_path, "r") as csv_file:
+            csv_reader = csv.DictReader(csv_file, delimiter="\t")
+            for row in csv_reader:
+                records.append(self._row_to_evaluation_data_entry(row))
+        return EvaluationData.from_records(records)
+
+
 class ClinVarVCFExtractor(Extractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for ClinVarVCF files.
     """
@@ -96,11 +110,11 @@ class ClinVarVCFExtractor(Extractor):
         return EvaluationData.from_records(records)
 
 
-class VariSNPExtractor(Extractor):
+class VariSNPExtractor(CSVExtractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
     """
 
-    def _build_entry(self, data_row) -> EvaluationDataEntry:
+    def _row_to_evaluation_data_entry(self, data_row) -> EvaluationDataEntry:
         hgvs_name = data_row['hgvs_names'].split(";")[0]
         chrom_number = int(hgvs_name.split(":")[0][3:9])
         chrom = None
@@ -115,11 +129,3 @@ class VariSNPExtractor(Extractor):
         ref = data_row['reference_allele']
         return EvaluationDataEntry(chrom, pos, ref, alt, PathogencityClass.BENIGN, VariationType.SNP,
                                    ReferenceGenome.HG38)
-
-    def _extract(self, file_path: str) -> EvaluationData:
-        records = []
-        with open(file_path, "r") as csv_file:
-            csv_reader = csv.DictReader(csv_file, delimiter="\t")
-            for row in csv_reader:
-                records.append(self._build_entry(row))
-        return EvaluationData.from_records(records)
