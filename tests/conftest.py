@@ -24,6 +24,11 @@ def grch37_vcf_path():
 
 
 @pytest.fixture()
+def custom_grch37_vcf_path():
+    return (Path(__file__) / "../resources/custom_test_grch37.vcf").resolve()
+
+
+@pytest.fixture()
 def grch38_vcf_path():
     return (Path(__file__) / "../resources/test_grch38.vcf").resolve()
 

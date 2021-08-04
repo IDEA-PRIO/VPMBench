@@ -99,8 +99,8 @@ class VariSNPExtractor(CSVExtractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
     """
 
-    def __init__(self, row_to_entry_func=None, **kwargs) -> None:
-        super().__init__(row_to_entry_func, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
         self.csv_reader_args = {'delimiter': '\t'}
 
     def _row_to_evaluation_data_entry(self, data_row) -> EvaluationDataEntry:
@@ -122,7 +122,10 @@ class VariSNPExtractor(CSVExtractor):
 
 class VCFExtractor(Extractor):
 
-    @abstractmethod
+    def __init__(self, record_to_pathogencity_class_func=None) -> None:
+        super().__init__()
+        self.record_to_pathogencity_class_func = self._extract_pathogencity_class_from_record if record_to_pathogencity_class_func is None else record_to_pathogencity_class_func
+
     def _extract_pathogencity_class_from_record(self, vcf_record) -> PathogencityClass:
         raise NotImplementedError
 
@@ -134,7 +137,7 @@ class VCFExtractor(Extractor):
             pos = vcf_record.POS
             ref = vcf_record.REF
             alt = (vcf_record.ALT[0] if len(vcf_record.ALT) == 1 else vcf_record.ALT).sequence
-            clnsig = self._extract_pathogencity_class_from_record(vcf_record)
+            clnsig = self.record_to_pathogencity_class_func(vcf_record)
             variation_type = VariationType(vcf_record.var_type)
             rg = ReferenceGenome.resolve(vcf_reader.metadata["reference"])
             records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
