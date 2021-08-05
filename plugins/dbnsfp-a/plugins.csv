@@ -1,0 +1,30 @@
+Name,RecordIndex,Cutoff
+SIFT,36 ,< 0.05
+SIFT4G,39 ,< 0.05
+Polyphen2-HDIV,42 ,0.5
+Polyphen2-HVAR,45 ,0.5
+LRT ,48 ,0.5
+MutationTaster2 ,52 ,0.5
+MutationAssessor,57 ,1.935
+FATHMM,60 ,< -1.5
+MetaSVM ,68 ,0
+MetaLR,71 ,0.5
+VEST4 ,66 ,0.5
+PROVEAN ,63 ,< -2.5
+FATHMM-XF coding,125,0.5
+fitCons ,136,0.5
+LINSIGHT,148,0.5
+DANN,119,0.5
+GenoCanyon,134,0.5
+Eigen ,128,0
+Eigen-PC,132,0
+M-CAP ,75 ,0.025
+REVEL ,78 ,0.5
+MutPred ,80 ,0.5
+MVP ,85 ,0.7
+MPC ,87 ,2.5
+PrimateAI ,89 ,0.803
+GEOGEN2 ,92 ,0.5
+BayesDel,95 ,0.0692655
+ClinPred,101,0.5
+LIST-S2 ,104,0.85

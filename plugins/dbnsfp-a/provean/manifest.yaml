@@ -1,0 +1,11 @@
+name: PROVEAN  (dbNSFP)
+supported-variations: SNP
+reference-genome: GRCh37/hg19
+cutoff: "< -2.5"
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py
+
+
+
