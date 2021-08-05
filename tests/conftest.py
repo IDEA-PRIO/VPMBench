@@ -77,12 +77,44 @@ def docker_plugin_path(plugin_path):
 def docker_plugin(docker_plugin_path):
     return load_plugin(docker_plugin_path)
 
+
 @pytest.fixture
 def available_metrics():
-    metrics =  PerformanceMetric.__subclasses__()
+    metrics = PerformanceMetric.__subclasses__()
     return metrics
+
 
 @pytest.fixture
 def available_summaries():
-    summaries =  PerformanceSummary.__subclasses__()
+    summaries = PerformanceSummary.__subclasses__()
     return summaries
+
+
+@pytest.fixture
+def cutoff_greater_plugin_path(plugin_path):
+    return plugin_path / "python-plugin-cuttof-greater" / "manifest.yaml"
+
+
+@pytest.fixture
+def cutoff_greater_plugin(cutoff_greater_plugin_path):
+    return load_plugin(cutoff_greater_plugin_path)
+
+
+@pytest.fixture
+def cutoff_less_plugin_path(plugin_path):
+    return plugin_path / "python-plugin-cuttof-less" / "manifest.yaml"
+
+
+@pytest.fixture
+def cutoff_less_plugin(cutoff_less_plugin_path):
+    return load_plugin(cutoff_less_plugin_path)
+
+
+@pytest.fixture
+def cutoff_just_number_plugin_path(plugin_path):
+    return plugin_path / "python-plugin-cuttof-just-number" / "manifest.yaml"
+
+
+@pytest.fixture
+def cutoff_just_number_plugin(cutoff_just_number_plugin_path):
+    return load_plugin(cutoff_just_number_plugin_path)

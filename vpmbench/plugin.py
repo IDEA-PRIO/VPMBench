@@ -437,7 +437,7 @@ class Score:
         """
         return self.plugin.cutoff
 
-    def interpret(self, cutoff: float = None) -> Series:
+    def interpret(self, cutoff: Union[str, float] = None) -> Series:
         """ Interpret the score using the cutoff.
 
         If the cutoff is None the :meth:`vpmbench.data.Score.cutoff` is used to interpret the score.
@@ -455,4 +455,17 @@ class Score:
         """
         if cutoff is None:
             cutoff = self.cutoff
+        try:
+            split = cutoff.split(" ")
+            if len(split) == 1:
+                cutoff = float(split[0])
+                return self.data.apply(lambda value: 1 if value > cutoff else 0)
+            if split[0] == ">":
+                cutoff = float(split[1])
+                return self.data.apply(lambda value: 1 if value > cutoff else 0)
+            if split[0] == "<":
+                cutoff = float(split[1])
+                return self.data.apply(lambda value: 1 if value < cutoff else 0)
+        except Exception:
+            pass
         return self.data.apply(lambda value: 1 if value > cutoff else 0)
