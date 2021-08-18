@@ -116,7 +116,7 @@ class EvaluationData:
                           required=True),
             "CLASS": Column(checks=Check(lambda cl: isinstance(cl, PathogencityClass), element_wise=True),
                             required=True),
-            "UID": Column(Int, Check(lambda x: x >= 0), required=True),
+            "UID": Column(Int, Check(lambda x: x >= 0), required=True, coerce=True),
             "TYPE": Column(checks=Check(lambda cl: isinstance(cl, VariationType), element_wise=True),
                            required=True),
             "RG": Column(checks=Check(lambda cl: isinstance(cl, ReferenceGenome), element_wise=True),

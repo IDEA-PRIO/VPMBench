@@ -11,6 +11,11 @@ def test_run_python_plugin(python_plugin, evaluation_data_grch37):
     assert type(result) is DataFrame
     assert set(result.columns) == {"UID", python_plugin.score_column_name}
 
+def test_run_bad_python_plugin(bad_python_plugin, evaluation_data_grch37):
+    result = bad_python_plugin.run(evaluation_data_grch37.variant_data)
+    assert result is not None
+    assert type(result) is DataFrame
+    assert set(result.columns) == {"UID", bad_python_plugin.score_column_name}
 
 def test_run_docker_plugin(docker_plugin, evaluation_data_grch37):
     result = docker_plugin.run(evaluation_data_grch37.variant_data)
