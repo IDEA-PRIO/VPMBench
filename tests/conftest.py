@@ -118,3 +118,12 @@ def cutoff_just_number_plugin_path(plugin_path):
 @pytest.fixture
 def cutoff_just_number_plugin(cutoff_just_number_plugin_path):
     return load_plugin(cutoff_just_number_plugin_path)
+
+@pytest.fixture
+def bad_python_plugin_path(plugin_path):
+    return plugin_path / "bad-python-plugin" / "manifest.yaml"
+
+
+@pytest.fixture
+def bad_python_plugin(bad_python_plugin_path):
+    return load_plugin(bad_python_plugin_path, with_flexible_plugins=True)
