@@ -1,0 +1,7 @@
+name: Bad-Python-Plugin
+supported-variations: INDEL, SNP
+reference-genome: GRCh37/hg19
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py
