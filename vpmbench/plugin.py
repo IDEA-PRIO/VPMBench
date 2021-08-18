@@ -158,6 +158,9 @@ class Plugin:
 
     manifest_path
         The file path to the manifest file for the plugin
+
+    is flexible
+        Allows null values for variants without a score
     """
     name: str
     version: str
@@ -170,6 +173,7 @@ class Plugin:
     entry_point: EntryPoint
     cutoff: float
     manifest_path: Union[str, Path]
+    is_flexible: bool = False
 
     @property
     def score_column_name(self) -> str:
@@ -217,8 +221,8 @@ class Plugin:
         self._validate_score_table(variant_information_table, score_table)
         return score_table.rename(columns={"SCORE": self.score_column_name})
 
-    @staticmethod
-    def _validate_score_table(variant_information_table: DataFrame, score_table: DataFrame):
+
+    def _validate_score_table(self, variant_information_table: DataFrame, score_table: DataFrame):
         """ Validate the results of the prioritization method.
 
         The following constraints are checked:
@@ -296,7 +300,7 @@ class PluginBuilder:
     """
 
     @classmethod
-    def build_plugin(cls, **kwargs) -> Plugin:
+    def build_plugin(cls, is_flexible: bool = False, **kwargs) -> Plugin:
         """ Build a plugin from the arguments.
 
         See the documentation for specification the manifest schema.
@@ -305,6 +309,11 @@ class PluginBuilder:
         ----------
         kwargs :
             The arguments
+
+        is flexible:
+            Allows null values for variants without a score for one plugin
+                True: Does allow null values
+                False: Does not allow null values
 
         Returns
         -------
@@ -336,7 +345,7 @@ class PluginBuilder:
         supported_chromosomes = set(supported_chromosomes) - set(unsupported_chromsomes)
         p = Plugin(name, version, supported_variations, supported_chromosomes, reference_genome, databases, entry_point,
                    cutoff,
-                   manifest_path)
+                   manifest_path, is_flexible)
         return p
 
     @classmethod

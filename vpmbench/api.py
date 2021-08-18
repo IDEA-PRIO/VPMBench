@@ -50,13 +50,19 @@ def extract_evaluation_data(evaluation_data_path: Union[str, Path],
     return extractor.extract(evaluation_data_path)
 
 
-def load_plugin(manifest_path: Union[str, Path]) -> Plugin:
+def load_plugin(manifest_path: Union[str, Path], with_flexible_plugins: bool = False) -> Plugin:
     """ Load a manifest given by the `manifest_path` as a plugin.
 
     Parameters
     ----------
     manifest_path : Union[str, Path]
         The path to the manifest
+
+    with_flexible_plugins : bool
+        Allows null values for variants without a score for one plugin
+            True: Does allow null values
+            False: Does not allow null values
+
 
     Returns
     -------
@@ -67,10 +73,10 @@ def load_plugin(manifest_path: Union[str, Path]) -> Plugin:
     with open(manifest_path, "r") as manifest_file:
         manifest = yaml.safe_load(manifest_file)
         manifest["path"] = Path(manifest_path)
-        return PluginBuilder.build_plugin(**manifest)
+        return PluginBuilder.build_plugin(with_flexible_plugins, **manifest)
 
 
-def load_plugins(plugin_path: Union[str, Path], plugin_selection: Optional[Callable[[Plugin], bool]] = None) -> \
+def load_plugins(plugin_path: Union[str, Path], plugin_selection: Optional[Callable[[Plugin], bool]] = None, with_flexible_plugins: bool = False ) -> \
         List[Plugin]:
     """ Load all plugins from the `plugin_directory` and applies the plugin selection to filter them.
 
@@ -84,6 +90,12 @@ def load_plugins(plugin_path: Union[str, Path], plugin_selection: Optional[Calla
     plugin_selection : Optional[Callable[[Plugin], bool]]
         The selection function that should be applied to filter the plugins
 
+    with_flexible_plugins : bool
+        Allows null values for variants without a score for all plugins
+            True: Does allow null values
+            False: Does not allow null values
+
+
     Returns
     -------
     List[Plugin]
@@ -96,7 +108,7 @@ def load_plugins(plugin_path: Union[str, Path], plugin_selection: Optional[Calla
     found_plugins = []
     for manifest in plugin_path.glob("*/**/manifest.yaml"):
         try:
-            plugin = load_plugin(manifest)
+            plugin = load_plugin(manifest, with_flexible_plugins)
             found_plugins.append(plugin)
         except Exception as e:
             warnings.warn(f"Can't load plugin from {manifest}: {e} ")
@@ -231,12 +243,13 @@ def run_pipeline(with_data: Union[str, Path],
                  reporting: List[Union[Type[PerformanceMetric], Type[PerformanceSummary]]],
                  using: Callable[[Plugin], Any] = None,
                  extractor: Type[Extractor] = ClinVarVCFExtractor,
-                 plugin_path: Union[str, Path] = DEFAULT_PLUGIN_PATH, cpu_count: int = -1) -> PerformanceReport:
+                 plugin_path: Union[str, Path] = DEFAULT_PLUGIN_PATH, cpu_count: int = -1,
+                 with_flexible_plugins: bool = False) -> PerformanceReport:
     log.info("Run pipeline")
     start_time = datetime.now()
     log.debug(f'Starting time: {start_time.strftime("%d/%m/%Y %H:%M:%S")}')
     evaluation_data: EvaluationData = extract_evaluation_data(with_data, extractor)
-    plugins: List[Plugin] = load_plugins(plugin_path, using)
+    plugins: List[Plugin] = load_plugins(plugin_path, using, with_flexible_plugins)
     if len(plugins) == 0:
         raise RuntimeError(f"Can' find plugins in {plugin_path}")
     annotated_variants: AnnotatedVariantData = invoke_methods(plugins, evaluation_data.variant_data, cpu_count)
