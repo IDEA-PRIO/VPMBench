@@ -31,7 +31,6 @@ class PathogencityClass(Enum):
         else:
             return 0
 
-
     @staticmethod
     def resolve(name: str) -> 'PathogencityClass':
         """ Return a pathogencity based on the given string
@@ -72,6 +71,8 @@ class VariationType(Enum):
     """
     SNP = "snp"
     INDEL = "indel"
+    CODING = "conding"
+    NON_CODING = "non-coding"
 
     @staticmethod
     def resolve(name: str) -> 'VariationType':
@@ -98,10 +99,9 @@ class VariationType(Enum):
             If the name can not be solved
         """
         name = name.lower()
-        if name == "snp":
-            return VariationType.SNP
-        elif name == "indel":
-            return VariationType.INDEL
+        rv = VariationType(name)
+        if rv is not None:
+            return rv
         else:
             raise RuntimeError(f"Can't resolve variation type for name {name}")
 
