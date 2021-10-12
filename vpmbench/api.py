@@ -17,13 +17,16 @@ from vpmbench.report import PerformanceReport
 from vpmbench.summaries import PerformanceSummary
 
 
+default_pathogencity_class_map = {"benign" : 0, "pathogenic" :1}
+
 def is_plugin_compatible_with_data(plugin: Plugin, data: EvaluationData):
     plugin.is_compatible_with_data(data.variant_data)
     return True
 
 
 def extract_evaluation_data(evaluation_data_path: Union[str, Path],
-                            extractor: Union[Extractor, Type[Extractor]] = ClinVarVCFExtractor) -> EvaluationData:
+                            extractor: Union[Extractor, Type[Extractor]] = ClinVarVCFExtractor,
+                            pathogenicity_class_map = default_pathogencity_class_map) -> EvaluationData:
     """ Extract the EvaluationData from the evaluation input data.
 
     Parses the evaluation the evaluation input data given by the `evaluation_data_path` using the `extractor`.
@@ -47,7 +50,10 @@ def extract_evaluation_data(evaluation_data_path: Union[str, Path],
         pass
     log.info(f"Extract data from {evaluation_data_path} ")
     log.debug(f"Used extractor: {extractor}!")
-    return extractor.extract(evaluation_data_path)
+    extracted_data = extractor.extract(evaluation_data_path)
+    extracted_data.interpretation_map = pathogenicity_class_map
+    extracted_data.validate()
+    return extracted_data
 
 
 def load_plugin(manifest_path: Union[str, Path]) -> Plugin:
@@ -231,11 +237,13 @@ def run_pipeline(with_data: Union[str, Path],
                  reporting: List[Union[Type[PerformanceMetric], Type[PerformanceSummary]]],
                  using: Callable[[Plugin], Any] = None,
                  extractor: Type[Extractor] = ClinVarVCFExtractor,
-                 plugin_path: Union[str, Path] = DEFAULT_PLUGIN_PATH, cpu_count: int = -1) -> PerformanceReport:
+                 plugin_path: Union[str, Path] = DEFAULT_PLUGIN_PATH,
+                 cpu_count: int = -1,
+                 pathogenicity_class_map = default_pathogencity_class_map) -> PerformanceReport:
     log.info("Run pipeline")
     start_time = datetime.now()
     log.debug(f'Starting time: {start_time.strftime("%d/%m/%Y %H:%M:%S")}')
-    evaluation_data: EvaluationData = extract_evaluation_data(with_data, extractor)
+    evaluation_data: EvaluationData = extract_evaluation_data(with_data, extractor,pathogenicity_class_map)
     plugins: List[Plugin] = load_plugins(plugin_path, using)
     if len(plugins) == 0:
         raise RuntimeError(f"Can' find plugins in {plugin_path}")

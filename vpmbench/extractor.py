@@ -7,7 +7,7 @@ from vcf import Reader
 
 from vpmbench import log
 from vpmbench.data import EvaluationDataEntry, EvaluationData
-from vpmbench.enums import PathogencityClass, VariationType, ReferenceGenome
+from vpmbench.enums import VariationType, ReferenceGenome
 
 
 class Extractor(ABC):
@@ -72,7 +72,6 @@ class Extractor(ABC):
                 f"compatible with the Extractor.\n If the data exists use absolute path.") from ex
         log.debug("Extracted Data:")
         log.debug(table.variant_data.head(10))
-        table.validate()
         return table
 
 
@@ -116,7 +115,7 @@ class VariSNPExtractor(CSVExtractor):
         pos = int(data_row['asn_to']) + 1
         alt = data_row['minor_allele']
         ref = data_row['reference_allele']
-        return EvaluationDataEntry(chrom, pos, ref, alt, PathogencityClass.BENIGN, VariationType.SNP,
+        return EvaluationDataEntry(chrom, pos, ref, alt, "benign", VariationType.SNP,
                                    ReferenceGenome.HG38)
 
 
@@ -126,7 +125,7 @@ class VCFExtractor(Extractor):
         super().__init__()
         self.record_to_pathogencity_class_func = self._extract_pathogencity_class_from_record if record_to_pathogencity_class_func is None else record_to_pathogencity_class_func
 
-    def _extract_pathogencity_class_from_record(self, vcf_record) -> PathogencityClass:
+    def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
         raise NotImplementedError
 
     def _extract(self, file_path: str) -> EvaluationData:
@@ -148,6 +147,11 @@ class ClinVarVCFExtractor(VCFExtractor):
     """ An implementation of an :class:`~vpmbench.extractor.Extractor` for ClinVarVCF files.
     """
 
-    def _extract_pathogencity_class_from_record(self, vcf_record) -> PathogencityClass:
+    def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
         vcf_clnsig = vcf_record.INFO["CLNSIG"][0].lower()
-        return PathogencityClass.resolve(vcf_clnsig)
+        if "benign" in vcf_clnsig or "2" in vcf_clnsig:
+            return "benign"
+        elif "pathogenic" in vcf_clnsig or "5" in vcf_clnsig:
+            return "pathogenic"
+        else:
+            raise RuntimeError(f"Can't extract pathogenicity for: {vcf_clnsig}")

@@ -1,64 +1,64 @@
 from enum import Enum
 
 
-class PathogencityClass(Enum):
-    """ Represent the pathogencity classes of the variants.
-
-    Following values are supported:
-
-        * BENIGN for benign variants
-        * PATHOGENIC for pathogenic variants
-    """
-
-    BENIGN = "benign"
-    PATHOGENIC = "pathogenic"
-
-    def interpret(self) -> int:
-        """ Interpret the pathogencity class to get a numerical value.
-
-        The following rules apply:
-
-            * ``PathogencityClass.BENIGN`` -> 0
-            * ``PathogencityClass.PATHOGENIC`` -> 1
-
-        Returns
-        -------
-        int
-            The interpreted value of the pathogencity class
-        """
-        if self == PathogencityClass.PATHOGENIC:
-            return 1
-        else:
-            return 0
-
-    @staticmethod
-    def resolve(name: str) -> 'PathogencityClass':
-        """ Return a pathogencity based on the given string
-        The following rules apply:
-            * if 'benign' in name -> ``PathogencityClass.BENIGN``
-            * if 'pathogenic' in name -> ``PathogencityClass.PATHOGENIC``
-        Parameters
-        ----------
-        name :
-            The string.
-        Returns
-        -------
-        PathogencityClass
-            The resulting pathogencity class for the string
-        Raises
-        ------
-        RuntimeError
-            If the name can not be resolved
-        """
-        if "benign" in name or "2" in name:
-            return PathogencityClass.BENIGN
-        elif "pathogenic" in name or "5" in name:
-            return PathogencityClass.PATHOGENIC
-        else:
-            raise RuntimeError(f"Can't resolve pathogencity class for name '{name}'")
-
-    def __str__(self):
-        return self.value
+# class PathogencityClass(Enum):
+#     """ Represent the pathogencity classes of the variants.
+#
+#     Following values are supported:
+#
+#         * BENIGN for benign variants
+#         * PATHOGENIC for pathogenic variants
+#     """
+#
+#     BENIGN = "benign"
+#     PATHOGENIC = "pathogenic"
+#
+#     def interpret(self) -> int:
+#         """ Interpret the pathogencity class to get a numerical value.
+#
+#         The following rules apply:
+#
+#             * ``PathogencityClass.BENIGN`` -> 0
+#             * ``PathogencityClass.PATHOGENIC`` -> 1
+#
+#         Returns
+#         -------
+#         int
+#             The interpreted value of the pathogencity class
+#         """
+#         if self == PathogencityClass.PATHOGENIC:
+#             return 1
+#         else:
+#             return 0
+#
+#     @staticmethod
+#     def resolve(name: str) -> 'PathogencityClass':
+#         """ Return a pathogencity based on the given string
+#         The following rules apply:
+#             * if 'benign' in name -> ``PathogencityClass.BENIGN``
+#             * if 'pathogenic' in name -> ``PathogencityClass.PATHOGENIC``
+#         Parameters
+#         ----------
+#         name :
+#             The string.
+#         Returns
+#         -------
+#         PathogencityClass
+#             The resulting pathogencity class for the string
+#         Raises
+#         ------
+#         RuntimeError
+#             If the name can not be resolved
+#         """
+#         if "benign" in name or "2" in name:
+#             return PathogencityClass.BENIGN
+#         elif "pathogenic" in name or "5" in name:
+#             return PathogencityClass.PATHOGENIC
+#         else:
+#             raise RuntimeError(f"Can't resolve pathogencity class for name '{name}'")
+#
+#     def __str__(self):
+#         return self.value
 
 
 class VariationType(Enum):

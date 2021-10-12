@@ -412,38 +412,6 @@ class PluginBuilder:
                 f"Can't build entry point for plugin {manifest['name']}: Entry point file {entry_point_file} does not exist")
         return PythonEntryPoint(entry_point_file)
 
-def _build_mask(data,cutoff):
-    if isinstance(cutoff, numbers.Number):
-        return data > cutoff
-    elif isinstance(cutoff, str):
-        split = cutoff.strip().split(" ")
-        if len(split) == 1:
-            cutoff = float(split[0])
-            return data > cutoff
-        elif split[0] == ">":
-            cutoff = float(split[1])
-            return data > cutoff
-        elif split[0] == "<":
-            cutoff = float(split[1])
-            return data < cutoff
-
-def _build_masks(data, cutoff):
-    if isinstance(cutoff,list):
-        mask = {}
-        for (i,entry) in enumerate(cutoff):
-            mask[i] = _build_mask(data,entry)
-        return mask
-    else:
-        mask = _build_mask(data,cutoff)
-        return {0:~mask,1:mask}
-
-
-def _apply_masks(data, masks:dict):
-    sorted_keys = sorted(masks.keys(),reverse=True)
-    for key in sorted_keys:
-        data[masks[key]] = key
-    return data
-
 
 @dataclass
 class Score:
@@ -486,7 +454,38 @@ class Score:
         :class:`pandas.Series`
             The interpreted scores
         """
+        def _build_mask(data, cutoff):
+            if isinstance(cutoff, numbers.Number):
+                return data > cutoff
+            elif isinstance(cutoff, str):
+                split = cutoff.strip().split(" ")
+                if len(split) == 1:
+                    cutoff = float(split[0])
+                    return data > cutoff
+                elif split[0] == ">":
+                    cutoff = float(split[1])
+                    return data > cutoff
+                elif split[0] == "<":
+                    cutoff = float(split[1])
+                    return data < cutoff
+
+        def _build_masks(data, cutoff):
+            if isinstance(cutoff, list):
+                mask = {}
+                for (i, entry) in enumerate(cutoff):
+                    mask[i] = _build_mask(data, entry)
+                return mask
+            else:
+                mask = _build_mask(data, cutoff)
+                return {0: ~mask, 1: mask}
+
+        def _apply_masks(data, masks: dict):
+            sorted_keys = sorted(masks.keys(), reverse=True)
+            for key in sorted_keys:
+                data[masks[key]] = key
+            return data
+
         if cutoff is None:
             cutoff = self.cutoff
-        masks = _build_masks(self.data,cutoff)
-        return _apply_masks(self.data.copy(),masks)
+        masks = _build_masks(self.data, cutoff)
+        return _apply_masks(self.data.copy(), masks)
