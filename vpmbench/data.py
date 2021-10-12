@@ -4,6 +4,7 @@ from typing import List, Tuple
 
 from pandas import DataFrame
 from pandera import DataFrameSchema, Column, Int, Check, String
+from pandera.errors import SchemaErrors
 
 from vpmbench.enums import VariationType, ReferenceGenome
 from vpmbench.plugin import Score
@@ -124,7 +125,11 @@ class EvaluationData:
                            required=True),
             "RG": Column(checks=Check(lambda cl: isinstance(cl, ReferenceGenome), element_wise=True),
                          required=True)})
-        schema.validate(self.table, lazy=True)
+        try:
+            schema.validate(self.table, lazy=True)
+        except SchemaErrors as ex:
+            ex.failure_cases
+            raise ex
 
     @property
     def variant_data(self) -> DataFrame:
@@ -150,9 +155,10 @@ class EvaluationData:
         :class:`pandas.Series`
             A series of interpreted classes
         """
-        interpret = lambda label:  self.interpretation_map[label]
+        interpret = lambda label: self.interpretation_map[label]
         result = self.table["CLASS"].apply(interpret)
         return result
+
 
 @dataclass
 class AnnotatedVariantData:

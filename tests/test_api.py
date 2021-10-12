@@ -32,6 +32,7 @@ def test_load_plugins(plugin_path):
                           'Python-Plugin Cuttof Greater',
                           'Python-Plugin Cuttof Less',
                           'Python-Plugin Cuttof Number',
+                          'Python-Plugin Multi Cuttof',
                           'Zero-Python-Plugin'}
 
 

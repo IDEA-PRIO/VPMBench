@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from warnings import warn
 
 from pandera.typing import Series
 from sklearn.metrics import confusion_matrix, roc_curve, precision_recall_curve
@@ -67,6 +68,9 @@ class ROCCurve(PerformanceSummary):
             ``thresholds`` - the thresholds
 
         """
+        if len(interpreted_classes.unique()) > 2:
+            warn("Can't calculate ROC curves for multiclass.")
+            return {}
         fpr, tpr, thresholds = roc_curve(interpreted_classes, score.data)
         return {'fpr': fpr, "tpr": tpr, "thresholds": thresholds}
 
@@ -94,6 +98,9 @@ class PrecisionRecallCurve(PerformanceSummary):
             ``thresholds`` - the thresholds
 
         """
+        if len(interpreted_classes.unique()) > 2:
+            warn("Can't calculate precision recall curves for multiclass.")
+            return {}
         precision, recall, thresholds = precision_recall_curve(interpreted_classes, score.data)
         return {'precision': precision, "recall": recall, "thresholds": thresholds}
 

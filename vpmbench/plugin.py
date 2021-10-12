@@ -489,3 +489,4 @@ class Score:
             cutoff = self.cutoff
         masks = _build_masks(self.data, cutoff)
         return _apply_masks(self.data.copy(), masks)
+

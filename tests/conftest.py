@@ -12,6 +12,10 @@ from vpmbench.summaries import PerformanceSummary
 def varisnp_path():
     return (Path(__file__) / "../resources/varisnp_10.csv").resolve()
 
+@pytest.fixture()
+def multi_class_custom_csv_path():
+    return (Path(__file__) / "../resources/multi_class_custom.csv").resolve()
+
 
 @pytest.fixture()
 def custom_varisnp_path():

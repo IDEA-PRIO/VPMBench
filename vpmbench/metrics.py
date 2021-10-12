@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from warnings import warn
 
 from pandas import Series
 from sklearn.metrics import roc_auc_score, matthews_corrcoef
@@ -202,6 +203,9 @@ class AreaUnderTheCurveROC(PerformanceMetric):
 
     @staticmethod
     def calculate(score: Score, interpreted_classes: Series) -> float:
+        if len(interpreted_classes.unique()) > 2:
+            warn("Can't calculate area under the roc curve for multiclass.")
+            return {}
         return roc_auc_score(interpreted_classes, score.data)
 
     @staticmethod
