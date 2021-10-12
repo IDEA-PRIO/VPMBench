@@ -27,6 +27,7 @@ def test_load_plugins(plugin_path):
     names = [plugin.name for plugin in plugins]
     assert set(names) == {'Depth-Plugin',
                           'Docker-Plugin',
+                          'Extended-Manifests-Plugin',
                           'Python-Plugin',
                           'Python-Plugin Cuttof Greater',
                           'Python-Plugin Cuttof Less',

@@ -4,11 +4,13 @@ reference-genome: GRCh37/hg19
 
 supported-variations:
   - SNP
+  - non-coding
 unsupported-chromosomes:
   - MT
 
 databases:
   - fathmm-MKL_Current.tab.gz: 2014_09_12
+
 cutoff: 0.5
 
 entry-point:
