@@ -118,3 +118,11 @@ def cutoff_just_number_plugin_path(plugin_path):
 @pytest.fixture
 def cutoff_just_number_plugin(cutoff_just_number_plugin_path):
     return load_plugin(cutoff_just_number_plugin_path)
+
+@pytest.fixture
+def multi_cutoff_plugin_plugin_path(plugin_path):
+    return plugin_path / "python-plugin-multi-cuttof" / "manifest.yaml"
+
+@pytest.fixture
+def multi_cutoff_plugin(multi_cutoff_plugin_plugin_path):
+    return load_plugin(multi_cutoff_plugin_plugin_path)

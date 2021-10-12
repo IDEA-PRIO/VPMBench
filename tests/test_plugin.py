@@ -1,7 +1,7 @@
 import pytest
 from pandas import DataFrame
 
-from vpmbench.api import invoke_methods
+from vpmbench.api import invoke_methods, run_pipeline
 from vpmbench.data import AnnotatedVariantData
 
 
@@ -29,3 +29,9 @@ def test_score_cuttofs(cutoff_greater_plugin, cutoff_less_plugin, cutoff_just_nu
     results = invoke_methods(plugins, evaluation_data_grch37.variant_data)
     for score in results.scores:
         assert sum(score.interpret()) == 0
+
+
+def test_multi_cuttof(plugin_path, multi_cutoff_plugin, grch37_vcf_path, available_summaries, available_metrics):
+    plugin_selection = lambda plugin: plugin == multi_cutoff_plugin
+    run_pipeline(grch37_vcf_path, reporting=available_metrics + available_summaries, using=plugin_selection,
+                 plugin_path=plugin_path)

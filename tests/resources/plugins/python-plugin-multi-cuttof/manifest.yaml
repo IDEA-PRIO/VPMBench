@@ -1,0 +1,12 @@
+name: Python-Plugin Multi Cuttof
+supported-variations: INDEL, SNP
+reference-genome: GRCh37/hg19
+
+cutoff:
+  - < 0.3
+  - < 0.6
+  - < 1
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py
