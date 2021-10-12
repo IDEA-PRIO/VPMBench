@@ -165,3 +165,6 @@ class ReferenceGenome(Enum):
 
     def __str__(self):
         return self.value
+
+
+default_pathogencity_class_map = {"benign": 0, "pathogenic": 1}

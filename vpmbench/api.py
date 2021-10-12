@@ -10,14 +10,13 @@ from pandas import DataFrame
 from vpmbench import log
 from vpmbench.config import DEFAULT_PLUGIN_PATH
 from vpmbench.data import EvaluationData, AnnotatedVariantData
+from vpmbench.enums import default_pathogencity_class_map
 from vpmbench.extractor import Extractor, ClinVarVCFExtractor
 from vpmbench.metrics import PerformanceMetric
 from vpmbench.plugin import Plugin, PluginBuilder
 from vpmbench.report import PerformanceReport
 from vpmbench.summaries import PerformanceSummary
 
-
-default_pathogencity_class_map = {"benign" : 0, "pathogenic" :1}
 
 def is_plugin_compatible_with_data(plugin: Plugin, data: EvaluationData):
     plugin.is_compatible_with_data(data.variant_data)
@@ -26,7 +25,7 @@ def is_plugin_compatible_with_data(plugin: Plugin, data: EvaluationData):
 
 def extract_evaluation_data(evaluation_data_path: Union[str, Path],
                             extractor: Union[Extractor, Type[Extractor]] = ClinVarVCFExtractor,
-                            pathogenicity_class_map = default_pathogencity_class_map) -> EvaluationData:
+                            pathogenicity_class_map=default_pathogencity_class_map) -> EvaluationData:
     """ Extract the EvaluationData from the evaluation input data.
 
     Parses the evaluation the evaluation input data given by the `evaluation_data_path` using the `extractor`.
@@ -177,7 +176,8 @@ def invoke_methods(plugins: List[Plugin], variant_data: DataFrame, cpu_count: in
 
 # TODO: Refactor to have a real performance result object
 def calculate_metric_or_summary(annotated_variant_data: AnnotatedVariantData, evaluation_data: EvaluationData,
-                                report: Union[Type[PerformanceMetric], Type[PerformanceSummary]]) -> Dict[Plugin, Any]:
+                                report: Union[Type[PerformanceMetric], Type[PerformanceSummary]],
+                                pathogenicity_class_map=default_pathogencity_class_map) -> Dict[Plugin, Any]:
     """ Calculates a metrics or a summary for all plugins in the annotated variant data.
 
     Parameters
@@ -200,13 +200,13 @@ def calculate_metric_or_summary(annotated_variant_data: AnnotatedVariantData, ev
     log.debug(f"Calculate {report.name()}")
     rv = {}
     for score in annotated_variant_data.scores:
-        rv[score.plugin] = report.calculate(score, evaluation_data.interpreted_classes)
+        rv[score.plugin] = report.calculate(score, evaluation_data.interpreted_classes, pathogenicity_class_map)
     return rv
 
 
 def calculate_metrics_and_summaries(annotated_variant_data: AnnotatedVariantData, evaluation_data: EvaluationData,
-                                    reporting: List[Union[Type[PerformanceMetric], Type[PerformanceSummary]]]) -> Dict[
-    str, dict]:
+                                    reporting: List[Union[Type[PerformanceMetric], Type[PerformanceSummary]]],
+                                    pathogenicity_class_map=default_pathogencity_class_map) -> Dict[str, dict]:
     """ Calculates the metrics and summaries for the plugin used to annotate the variants.
 
     Uses :func:`~vpmbench.api.calculate_metric_or_summary` to calculate all summaries and metrics from `reporting`.
@@ -229,7 +229,8 @@ def calculate_metrics_and_summaries(annotated_variant_data: AnnotatedVariantData
     log.info("Calculate reports")
     rv = {}
     for report in reporting:
-        rv[report.name()] = calculate_metric_or_summary(annotated_variant_data, evaluation_data, report)
+        rv[report.name()] = calculate_metric_or_summary(annotated_variant_data, evaluation_data, report,
+                                                        pathogenicity_class_map)
     return rv
 
 
@@ -239,16 +240,16 @@ def run_pipeline(with_data: Union[str, Path],
                  extractor: Type[Extractor] = ClinVarVCFExtractor,
                  plugin_path: Union[str, Path] = DEFAULT_PLUGIN_PATH,
                  cpu_count: int = -1,
-                 pathogenicity_class_map = default_pathogencity_class_map) -> PerformanceReport:
+                 pathogenicity_class_map=default_pathogencity_class_map) -> PerformanceReport:
     log.info("Run pipeline")
     start_time = datetime.now()
     log.debug(f'Starting time: {start_time.strftime("%d/%m/%Y %H:%M:%S")}')
-    evaluation_data: EvaluationData = extract_evaluation_data(with_data, extractor,pathogenicity_class_map)
+    evaluation_data: EvaluationData = extract_evaluation_data(with_data, extractor, pathogenicity_class_map)
     plugins: List[Plugin] = load_plugins(plugin_path, using)
     if len(plugins) == 0:
         raise RuntimeError(f"Can' find plugins in {plugin_path}")
     annotated_variants: AnnotatedVariantData = invoke_methods(plugins, evaluation_data.variant_data, cpu_count)
-    reports = calculate_metrics_and_summaries(annotated_variants, evaluation_data, reporting)
+    reports = calculate_metrics_and_summaries(annotated_variants, evaluation_data, reporting, pathogenicity_class_map)
     log.info("Stop pipeline")
     end_time = datetime.now()
     log.debug(f'Finishing time: {end_time.strftime("%d/%m/%Y %H:%M:%S")}')
