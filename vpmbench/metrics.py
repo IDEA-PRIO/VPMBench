@@ -1,8 +1,10 @@
 from abc import abstractmethod, ABC
+from warnings import warn
 
 from pandas import Series
 from sklearn.metrics import roc_auc_score, matthews_corrcoef
 
+from vpmbench.api import default_pathogencity_class_map
 from vpmbench.data import Score
 from vpmbench.summaries import ConfusionMatrix
 
@@ -12,7 +14,8 @@ class PerformanceMetric(ABC):
 
     @staticmethod
     @abstractmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         return 0.0
 
     @staticmethod
@@ -23,7 +26,8 @@ class PerformanceMetric(ABC):
 
 class Sensitivity(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the sensitivity.
 
         Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the sensitivity/true positive rate.
@@ -50,7 +54,8 @@ class Sensitivity(PerformanceMetric):
 
 class Accuracy(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the accuracy.
 
         Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the accuracy/true positive rate.
@@ -78,7 +83,8 @@ class Accuracy(PerformanceMetric):
 
 class Precision(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the precision.
 
         Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the precision/positive predictive value.
@@ -105,7 +111,8 @@ class Precision(PerformanceMetric):
 
 class NegativePredictiveValue(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the negative predictive value.
 
         Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the negative predictive value.
@@ -132,7 +139,8 @@ class NegativePredictiveValue(PerformanceMetric):
 
 class Specificity(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the specificity.
 
         Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the specificity/false positive rate.
@@ -159,7 +167,8 @@ class Specificity(PerformanceMetric):
 
 class Concordance(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the concordance, i.e, the sum of true positives and true negatives.
 
         Uses a :class:`~vpmbench.summaries.ConfusionMatrix` to calculate the concordance.
@@ -201,7 +210,11 @@ class AreaUnderTheCurveROC(PerformanceMetric):
     """
 
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
+        if len(interpreted_classes.unique()) > 2:
+            warn("Can't calculate ROC curves for multiclass.")
+            return {}
         return roc_auc_score(interpreted_classes, score.data)
 
     @staticmethod
@@ -211,7 +224,8 @@ class AreaUnderTheCurveROC(PerformanceMetric):
 
 class MatthewsCorrelationCoefficient(PerformanceMetric):
     @staticmethod
-    def calculate(score: Score, interpreted_classes: Series) -> float:
+    def calculate(score: Score, interpreted_classes: Series,
+                  pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the matthews correlation coefficient.
 .
 

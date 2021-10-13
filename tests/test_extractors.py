@@ -1,7 +1,7 @@
 import pytest
 
 from vpmbench.data import EvaluationDataEntry
-from vpmbench.enums import PathogencityClass, ReferenceGenome, VariationType
+from vpmbench.enums import ReferenceGenome, VariationType
 from vpmbench.extractor import ClinVarVCFExtractor, VariSNPExtractor, CSVExtractor, VCFExtractor
 
 
@@ -48,7 +48,7 @@ def test_CustomCSVExtractor(custom_varisnp_path):
         pos = int(row['asn_to']) + 1
         alt = row['minor_allele']
         ref = row['reference_allele']
-        return EvaluationDataEntry(chrom, pos, ref, alt, PathogencityClass.BENIGN, VariationType.SNP,
+        return EvaluationDataEntry(chrom, pos, ref, alt, "benign", VariationType.SNP,
                                    ReferenceGenome.HG38)
 
     extractor = CSVExtractor(row_to_entry_func=custom_row_to_entry, delimiter=",")
@@ -58,7 +58,7 @@ def test_CustomCSVExtractor(custom_varisnp_path):
 def test_CustomVCFExtractor(custom_grch37_vcf_path):
     def custom_record_to_pathogenicity_class_func(vcf_record):
         vcf_clnsig = vcf_record.INFO["SIG"][0].lower()
-        return PathogencityClass.resolve(vcf_clnsig)
+        return "pathogenic"
 
     extractor = VCFExtractor(record_to_pathogencity_class_func=custom_record_to_pathogenicity_class_func)
     assert extractor.extract(custom_grch37_vcf_path) is not None

@@ -1,0 +1,11 @@
+name: $Name (dbNSFP - hg38)
+supported-variations: SNP
+reference-genome: GRCh38/hg38
+cutoff: $Cutoff
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py
+
+
+

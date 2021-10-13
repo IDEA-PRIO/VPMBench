@@ -1,0 +1,7 @@
+name: Extended-Manifests-Plugin
+supported-variations: INDEL, SNP, non-coding
+reference-genome: GRCh37/hg19
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py

@@ -12,6 +12,10 @@ from vpmbench.summaries import PerformanceSummary
 def varisnp_path():
     return (Path(__file__) / "../resources/varisnp_10.csv").resolve()
 
+@pytest.fixture()
+def multi_class_custom_csv_path():
+    return (Path(__file__) / "../resources/multi_class_custom.csv").resolve()
+
 
 @pytest.fixture()
 def custom_varisnp_path():
@@ -118,3 +122,11 @@ def cutoff_just_number_plugin_path(plugin_path):
 @pytest.fixture
 def cutoff_just_number_plugin(cutoff_just_number_plugin_path):
     return load_plugin(cutoff_just_number_plugin_path)
+
+@pytest.fixture
+def multi_cutoff_plugin_plugin_path(plugin_path):
+    return plugin_path / "python-plugin-multi-cuttof" / "manifest.yaml"
+
+@pytest.fixture
+def multi_cutoff_plugin(multi_cutoff_plugin_plugin_path):
+    return load_plugin(multi_cutoff_plugin_plugin_path)

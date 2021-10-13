@@ -57,6 +57,13 @@ Enums
 .. automodule:: vpmbench.enums
     :members:
 
+Predicates
+-------------
+
+.. automodule:: vpmbench.predicates
+    :members:
+
+
 Configuration
 -------------
 

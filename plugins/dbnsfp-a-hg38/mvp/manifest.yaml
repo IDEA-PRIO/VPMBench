@@ -1,0 +1,11 @@
+name: MVP  (dbNSFP - hg38)
+supported-variations: SNP
+reference-genome: GRCh38/hg38
+cutoff: "0.7"
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py
+
+
+

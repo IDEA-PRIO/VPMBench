@@ -3,7 +3,6 @@ from typing import List
 from pandas import DataFrame
 
 from vpmbench.data import EvaluationData, AnnotatedVariantData, Score
-from vpmbench.enums import PathogencityClass
 
 
 class PerformanceReport:

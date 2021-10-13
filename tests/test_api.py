@@ -25,7 +25,15 @@ def test_load_docker_manifest(docker_plugin_path):
 def test_load_plugins(plugin_path):
     plugins = load_plugins(plugin_path)
     names = [plugin.name for plugin in plugins]
-    assert set(names) == {"Python-Plugin", "Docker-Plugin", "Zero-Python-Plugin", "Depth-Plugin"}
+    assert set(names) == {'Depth-Plugin',
+                          'Docker-Plugin',
+                          'Extended-Manifests-Plugin',
+                          'Python-Plugin',
+                          'Python-Plugin Cuttof Greater',
+                          'Python-Plugin Cuttof Less',
+                          'Python-Plugin Cuttof Number',
+                          'Python-Plugin Multi Cuttof',
+                          'Zero-Python-Plugin'}
 
 
 def test_invoke_docker_method(docker_plugin, evaluation_data_grch37):

@@ -185,8 +185,8 @@ if [ "$COPY_PLUGINS" = true ]; then
     if [ "$INSTALL_CADD" = true ]; then
       echo ""
       echo ""
-      cp -r $BASEDIR/plugins/cadd $PLUGIN_PATH/
-      sh $PLUGIN_PATH/cadd/install.sh
+      cp -r $BASEDIR/plugins/cadd-hg19 $PLUGIN_PATH/
+      sh $PLUGIN_PATH/cadd-hg19/install.sh
     fi
     if [ "$INSTALL_FATHMM_MKL" = true ]; then
       echo ""

@@ -4,8 +4,9 @@ from typing import List, Tuple
 
 from pandas import DataFrame
 from pandera import DataFrameSchema, Column, Int, Check, String
+from pandera.errors import SchemaErrors
 
-from vpmbench.enums import PathogencityClass, VariationType, ReferenceGenome
+from vpmbench.enums import VariationType, ReferenceGenome
 from vpmbench.plugin import Score
 
 
@@ -34,7 +35,7 @@ class EvaluationDataEntry:
     POS: int
     REF: str
     ALT: str
-    CLASS: PathogencityClass
+    CLASS: str
     TYPE: VariationType
     RG: ReferenceGenome
 
@@ -63,6 +64,7 @@ class EvaluationData:
         The dataframe containing the required information about the variants.
     """
     table: DataFrame
+    interpretation_map: dict = None
 
     @staticmethod
     def from_records(records: List[EvaluationDataEntry]) -> 'EvaluationData':
@@ -107,6 +109,7 @@ class EvaluationData:
         chroms = set([str(x) for x in range(1, 23)] + ["X", "Y", "MT"])
         ref_validator = re.compile("^[ACGT]+$")
         alt_validator = re.compile("^[ACGT]+$")
+        interpretable_class_names = set(self.interpretation_map.keys())
         schema = DataFrameSchema({
             "CHROM": Column(String, Check(lambda chrom: chrom in chroms, element_wise=True), required=True),
             "POS": Column(Int, Check(lambda pos: pos >= 1), required=True),
@@ -114,14 +117,19 @@ class EvaluationData:
                           required=True),
             "ALT": Column(String, Check(lambda alt: alt_validator.match(alt) is not None, element_wise=True),
                           required=True),
-            "CLASS": Column(checks=Check(lambda cl: isinstance(cl, PathogencityClass), element_wise=True),
-                            required=True),
+            "CLASS": Column(
+                checks=Check(lambda cl: isinstance(cl, str) and cl in interpretable_class_names, element_wise=True),
+                required=True),
             "UID": Column(Int, Check(lambda x: x >= 0), required=True),
             "TYPE": Column(checks=Check(lambda cl: isinstance(cl, VariationType), element_wise=True),
                            required=True),
             "RG": Column(checks=Check(lambda cl: isinstance(cl, ReferenceGenome), element_wise=True),
                          required=True)})
-        schema.validate(self.table, lazy=True)
+        try:
+            schema.validate(self.table, lazy=True)
+        except SchemaErrors as ex:
+            ex.failure_cases
+            raise ex
 
     @property
     def variant_data(self) -> DataFrame:
@@ -147,7 +155,9 @@ class EvaluationData:
         :class:`pandas.Series`
             A series of interpreted classes
         """
-        return self.table["CLASS"].apply(PathogencityClass.interpret)
+        interpret = lambda label: self.interpretation_map[label]
+        result = self.table["CLASS"].apply(interpret)
+        return result
 
 
 @dataclass

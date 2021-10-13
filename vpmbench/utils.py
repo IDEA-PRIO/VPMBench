@@ -63,9 +63,11 @@ def plot_confusion_matrices(report: PerformanceReport,
         return
     confusion_matrices: dict = report.metrics_and_summaries[ConfusionMatrix.name()]
     for plugin, confusion_matrix in confusion_matrices.items():
-        cm = np.array([[confusion_matrix["tn"], confusion_matrix["fp"]],
-                       [confusion_matrix["fn"], confusion_matrix["tp"]]])
-        classes = ["Pathogenic", "Benign"]
+        cm = confusion_matrix["data"]
+        class_map:dict = confusion_matrix["pathogenicity_class_map"]
+        reverse_map = {y:x for x,y in class_map.items()}
+        classes = [reverse_map[i] for i in confusion_matrix["labels"]]
+        # classes = ["Pathogenic", "Benign"]
         if normalize:
             cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
