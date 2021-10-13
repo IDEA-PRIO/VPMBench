@@ -227,7 +227,6 @@ class MatthewsCorrelationCoefficient(PerformanceMetric):
     def calculate(score: Score, interpreted_classes: Series,
                   pathogenicity_class_map=default_pathogencity_class_map) -> float:
         """ Calculate the matthews correlation coefficient.
-.
 
         Parameters
         ----------

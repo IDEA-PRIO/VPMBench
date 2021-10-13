@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Union
 
 from vcf import Reader
+from vcf.model import _Record
 
 from vpmbench import log
 from vpmbench.data import EvaluationDataEntry, EvaluationData
@@ -164,7 +165,7 @@ class VCFExtractor(Extractor):
         super().__init__()
         self.record_to_pathogencity_class_func = self._extract_pathogencity_class_from_record if record_to_pathogencity_class_func is None else record_to_pathogencity_class_func
 
-    def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
+    def _extract_pathogencity_class_from_record(self, vcf_record: _Record) -> str:
         """ Extracts the pathogencity class of a vcf record.
 
         Parameters
