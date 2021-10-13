@@ -69,17 +69,19 @@ Therefore, the data has to satisfy the following constraints:
 * ALT has to be a string consisting of the letters A, C, G, T, N,*
 * RG has to be one of :class:`vpmbench.enums.ReferenceGenome`
 * TYPE has to be one of :class:`vpmbench.enums.VariationType`
-* CLASS has to be one of :class:`vpmbench.enums.PathogencityClass`
+* CLASS has to be a string
 
 
 Currently, we provide an extractor for:
 
-    * :class:`ClinVar-VCF files <vpmbench.extractor.ClinVarVCFExtractor>`.
-    * :class:`VariSNP Benchmarksuite files <vpmbench.extractor.VariSNPExtractor>`
+    * ClinVar-VCF files (:class:`ClinVarVCFExtractor <vpmbench.extractor.ClinVarVCFExtractor>`)
+    * VariSNP Benchmarksuite files (:class:`VariSNPExtractor <vpmbench.extractor.VariSNPExtractor>`)
 
 
-If you want to develop your extractor for your custom format, e.g., CSV, your Extractor class has to inherit from original :class:`Extractor <vpmbench.extractor.Extractor>` class.
-Moreover, we also recommend you to build a list of :class:`EvaluationDataEntries <vpmbench.data.EvaluationDataEntry>` in your extractor and pass them to :meth:`vpmbench.data.EvaluationData.from_records` to create the EvaluationData.
+If you want to develop your extractor for your custom format, your Extractor class has to inherit from original :class:`Extractor <vpmbench.extractor.Extractor>` class.
+If you want develop an custom extractor based on the CSV or VCF format, you can inherit from and implement the corresponding interfaces from :class:`CSVExtractor <vpmbench.extractor.CSVExtractor>` or :class:`VCFExtractor <vpmbench.extractor.VCFExtractor>`. Examples for such custom extractors can be found under ``tests/test_extractors.py``.
+
+In general, we recommend you to build a list of :class:`EvaluationDataEntries <vpmbench.data.EvaluationDataEntry>` in your extractor and pass them to :meth:`vpmbench.data.EvaluationData.from_records` to create the EvaluationData.
 This will also handle the assigning of the UID for you.
 Also, you can use :meth:`ReferenceGenome.resolve() <vpmbench.enums.ReferenceGenome.resolve>`, :meth:`VariationType.resolve() <vpmbench.enums.VariationType.resolve>`, and :meth:`PathogencityClass.resolve() <vpmbench.enums.PathogencityClass.resolve>` helping you to create valid attributes.
 
@@ -88,6 +90,7 @@ Also, you can use :meth:`ReferenceGenome.resolve() <vpmbench.enums.ReferenceGeno
 
 Plugins
 -------
+.. _plugins:
 
 In VPMBench, we integrate the variant prioritization methods as plugins into our pipeline.
 This allows you to integrate new methods, may they existing ones or your method under development, into VPMBench without changing pipeline code.

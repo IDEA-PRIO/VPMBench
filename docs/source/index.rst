@@ -8,6 +8,7 @@
    user/install
    user/concepts
    user/quickstart
+   user/experimental-features
    dev/api
 
 

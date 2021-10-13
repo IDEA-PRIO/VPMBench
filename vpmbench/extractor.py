@@ -76,7 +76,8 @@ class Extractor(ABC):
 
 
 class CSVExtractor(Extractor):
-
+    """ An implementation of a generic extractor for CSV files.
+    """
     def __init__(self, row_to_entry_func=None, **kwargs) -> None:
         super().__init__()
         self.row_to_entry_func = self._row_to_evaluation_data_entry if row_to_entry_func is None else row_to_entry_func
