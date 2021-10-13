@@ -14,8 +14,8 @@ enable_logging()
 # Run the vpmbench pipeline
 report = run_pipeline(with_data=evaluation_input_data,
                       reporting=summaries + metrics,
-                      using=cadd_and_fathmm,
-                      plugin_path="/media/andreas/OneTouch/VPMBench-Plugins")
+                      using=cadd_and_fathmm)
+
 #
 # Plot the summaries and report the metrics
 plot_confusion_matrices(report)
