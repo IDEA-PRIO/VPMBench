@@ -16,7 +16,8 @@ def was_trained_with(plugin: Plugin, database_name: str) -> bool:
     bool:
         The checking result
     """
-    return True
+    training_databases: dict = plugin.databases["training"]
+    return database_name.lower() in [key.lower() for key in training_databases.keys()]
 
 
 def is_multiclass_plugin(plugin: Plugin) -> bool:

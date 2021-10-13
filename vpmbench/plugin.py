@@ -167,7 +167,7 @@ class Plugin:
     supported_reference_allels = []
     supported_alternative_allels = []
     reference_genome: ReferenceGenome
-    databases: List[str]
+    databases: dict
     entry_point: EntryPoint
     cutoff: float
     manifest_path: Union[str, Path]
