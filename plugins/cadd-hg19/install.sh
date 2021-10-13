@@ -3,13 +3,13 @@
 SCRIPT=$(readlink -f "$0")
 BASEDIR=$(dirname "$SCRIPT")
 
-echo "INSTALLING CADD"
-echo "==============="
+echo "INSTALLING CADD (HG19)"
+echo "======================"
 echo ""
 
 echo "> Build Docker Image"
 cd $BASEDIR/phred/
-docker build -t vpmbench/cadd .
+docker build -t vpmbench/cadd-hg19 .
 
 cd ..
 

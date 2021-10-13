@@ -1,0 +1,11 @@
+name: FATHMM (dbNSFP - hg38)
+supported-variations: SNP
+reference-genome: GRCh38/hg38
+cutoff: "< -1.5"
+
+entry-point:
+  mode: Python
+  file: ./entrypoint.py
+
+
+

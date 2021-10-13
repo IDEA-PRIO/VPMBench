@@ -4,7 +4,7 @@ Experimental Features
 
 .. warning::
     All the listed features below are regarded as **experimental**, i.e., are rather integrated prototypcially into VPMBench.
-    Thus, their API might be subject to changes or might moved other branches.
+    Thus, their API might be subject to changes or might be moved to another branches.
 
 
 Multi-Class Classification Support
@@ -16,7 +16,7 @@ Therefore, the following steps are required:
 Implementing a Multi-Class Plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To implement a multi-class plugin, you basically have to follow the same approach as for the standard :ref:`plugins <plugins>`.
+To implement a multi-class plugin, you have to basically follow the same approach as for the  :ref:`standard plugins <plugins>`.
 The only difference between the standard plugins and multi-class plugins is the number of specified cutoff points.
 For the multi-class plugins, we require that for each class a cuttoff is defined as shown in the following example:
 

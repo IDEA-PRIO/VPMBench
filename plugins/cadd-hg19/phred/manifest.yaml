@@ -9,7 +9,7 @@ unsupported-chromosomes:
 
 entry-point:
   mode: Docker
-  image: vpmbench/cadd
+  image: vpmbench/cadd-hg19
   input:
     file-path: /input.vcf
     format: VCF
