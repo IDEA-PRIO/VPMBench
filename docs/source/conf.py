@@ -54,7 +54,8 @@ napoleon_use_rtype = True
 # Intersphinx settings
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'pandas': ('http://pandas.pydata.org/pandas-docs/dev', None),
-                       'pandera': ('https://pandera.readthedocs.io/en/stable', None)}
+                       'pandera': ('https://pandera.readthedocs.io/en/stable', None),
+                       'pyvcf': ('https://pyvcf.readthedocs.io/en/latest/', None)}
 
 # Autosection settings
 autosectionlabel_prefix_document = True

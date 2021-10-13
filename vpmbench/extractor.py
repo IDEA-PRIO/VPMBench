@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Union
 
 from vcf import Reader
+from vcf.model import _Record
 
 from vpmbench import log
 from vpmbench.data import EvaluationDataEntry, EvaluationData
@@ -77,13 +78,38 @@ class Extractor(ABC):
 
 class CSVExtractor(Extractor):
     """ An implementation of a generic extractor for CSV files.
+
+        The implementations uses the Python :class:`~csv.DictReader` to parse a CSV file.
+        To extract the :class:`~vpmbench.data.EvaluationData`, the :meth:`~vpmbench.extractor.CSVExtractor._row_to_evaluation_data_entry` is called.
+        If a row to entry function is passed as an argument, this function will be used instead of the internal method.
+
+
+        Parameters
+        ----------
+        row_to_entry_func
+            A function that called for every row in the CSV file to extract a :class:`~vpmbench.data.EvaluationDataEntry`
+        kwards
+            Arguments that are passed to the CSV parser
     """
-    def __init__(self, row_to_entry_func=None, **kwargs) -> None:
+
+    def __init__(self, row_to_entry_func=None, **kwargs):
         super().__init__()
         self.row_to_entry_func = self._row_to_evaluation_data_entry if row_to_entry_func is None else row_to_entry_func
         self.csv_reader_args = kwargs
 
-    def _row_to_evaluation_data_entry(self, data_row) -> EvaluationDataEntry:
+    def _row_to_evaluation_data_entry(self, data_row: dict) -> EvaluationDataEntry:
+        """ Parses a row of a CSV file to an evaluation data entry.
+
+        Parameters
+        ----------
+        data_row : dict
+            A dictionary representing a row of the CSV file
+
+        Returns
+        -------
+        EvaluationDataEntry
+            The evaluation data entry for the row
+        """
         raise NotImplementedError()
 
     def _extract(self, file_path: str) -> EvaluationData:
@@ -96,7 +122,7 @@ class CSVExtractor(Extractor):
 
 
 class VariSNPExtractor(CSVExtractor):
-    """ An implementation of an :class:`~vpmbench.extractor.Extractor` for VariSNP files.
+    """ An implementation of an for VariSNP files based on :class:`~vpmbench.extractor.CSVExtractor`.
     """
 
     def __init__(self) -> None:
@@ -121,12 +147,37 @@ class VariSNPExtractor(CSVExtractor):
 
 
 class VCFExtractor(Extractor):
+    """ An implementation of a generic extractor for VCF files.
+
+        The implementations uses pyvcf :class:`~vcf.Reader` to parse a VCF file.
+        The implementation already extracts POS, CHOM, REF, ALT for each variant.
+        To extract the CLASS the internal :meth:`~vpmbench.extractor.VCFExtractor._extract_pathogencity_class_from_record` is called for each VCF entry.
+        If a record to pathogenicity class func is passed as an argument, this function will be used instead of the internal method.
+
+
+        Parameters
+        ----------
+        record_to_pathogencity_class_func
+            A function that returns the pathogenicty class for each entry in the VCF file.
+    """
 
     def __init__(self, record_to_pathogencity_class_func=None) -> None:
         super().__init__()
         self.record_to_pathogencity_class_func = self._extract_pathogencity_class_from_record if record_to_pathogencity_class_func is None else record_to_pathogencity_class_func
 
-    def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
+    def _extract_pathogencity_class_from_record(self, vcf_record: _Record) -> str:
+        """ Extracts the pathogencity class of a vcf record.
+
+        Parameters
+        ----------
+        vcf_record : vcf.model._Record
+            A record of the VCF file
+
+        Returns
+        -------
+        str
+            The pathogenicty class of the variant
+        """
         raise NotImplementedError
 
     def _extract(self, file_path: str) -> EvaluationData:
@@ -145,7 +196,7 @@ class VCFExtractor(Extractor):
 
 
 class ClinVarVCFExtractor(VCFExtractor):
-    """ An implementation of an :class:`~vpmbench.extractor.Extractor` for ClinVarVCF files.
+    """ An extractor ClinVAR VCF files based on :class:`~vpmbench.extractor.VCFExtractor`.
     """
 
     def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
