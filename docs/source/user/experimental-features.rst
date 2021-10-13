@@ -40,7 +40,23 @@ Implementing a custom extractor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Implementing a custom extractor allows you to assign arbitrary class labels for each of the entries.
-Currently, we provide customizable :class:`CSV <vpmbench.extractors.CSVExtractor` and VCF extractors
+Currently, we provide customizable extractors for :class:`CSV <vpmbench.extractor.CSVExtractor>` and :class:`VCF <vpmbench.extractor.VCFExtractor>` files.
+
+A custom extractor supporting mutli-classes might look like this:
+
+.. code-block:: python
+
+    class CustomMultiClassCSVExtractor(CSVExtractor):
+
+        def _row_to_evaluation_data_entry(self, row: dict) -> EvaluationDataEntry:
+            translation_map = {"A":"bad","B":"really bad","C":"its ok"}
+            chrom = str(row["CHROM"].strip())
+            pos = int(row["POS"].strip())
+            ref = row["REF"].strip()
+            alt = row["ALT"].strip()
+            clnsig = translation_map[row["CLASS"].strip()]
+            return EvaluationDataEntry(chrom, pos, ref, alt, clnsig, VariationType.SNP, ReferenceGenome.HG19)
+
 
 Invoking the VPMBench
 ^^^^^^^^^^^^^^^^^^^^^
@@ -59,7 +75,7 @@ An example might be look like this:
     from vpmbench.predicates import is_multiclass_plugin
     from my.package import MyCustomExtractor
 
-    class_map =  {"benign": 0, "likely pathogenic": 1, "pathogenic": 2}
+    class_map =  {"bad": 0, "really bad": 1, "its ok": 2}
     multi_class_plugins = lambda plugin: is_multiclass_plugin(plugin)
     my_data = "/my/path/to/my/multiclass-data.csv"
     results = run_pipeline(my_data,
