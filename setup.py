@@ -11,7 +11,7 @@ setup(
     description='',
 
     install_requires=[
-        "setuptools==58.0.0",
+        "setuptools>58.0.0",
         "pandas>=1.2.1",
         "pandera>=0.6.2",
         "pyyaml>=5.4.1",
