@@ -17,7 +17,7 @@ setup(
         "docker>=4.4.2",
         "scikit-learn>=0.24.1",
         "numpy>=1.19.4",
-        "pyvcf>=0.6.8",
+        "PyVCF@git+https://github.com/ousamg/pyvcf.git@v0.6.9",
         "matplotlib>=3.3.4"
     ],
     extras_require={
