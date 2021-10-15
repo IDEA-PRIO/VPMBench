@@ -56,7 +56,7 @@ def test_CustomCSVExtractor(custom_varisnp_path):
 
 
 def test_CustomVCFExtractor(custom_grch37_vcf_path):
-    def custom_record_to_pathogenicity_class_func(vcf_record):
+    def custom_record_to_pathogenicity_class_func(index, vcf_record):
         vcf_clnsig = vcf_record.INFO["SIG"][0].lower()
         return "pathogenic"
 

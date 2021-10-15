@@ -1,9 +1,10 @@
 import csv
+import gzip
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union
 
-from vcf import Reader
+from vcfpy import Reader
 
 from vpmbench import log
 from vpmbench.data import EvaluationDataEntry, EvaluationData
@@ -164,7 +165,7 @@ class VCFExtractor(Extractor):
         super().__init__()
         self.record_to_pathogencity_class_func = self._extract_pathogencity_class_from_record if record_to_pathogencity_class_func is None else record_to_pathogencity_class_func
 
-    def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
+    def _extract_pathogencity_class_from_record(self, index, vcf_record) -> str:
         """ Extracts the pathogencity class of a vcf record.
 
         Parameters
@@ -181,25 +182,32 @@ class VCFExtractor(Extractor):
 
     def _extract(self, file_path: str) -> EvaluationData:
         records = []
-        vcf_reader = Reader(filename=file_path, encoding="latin-1", strict_whitespace=True)
+        vcf_file_handler = self._open_vcf_file(file_path)
+        vcf_reader = Reader.from_stream(vcf_file_handler)
         for vcf_record in vcf_reader:
-            chrom = str(vcf_record.CHROM)
+            rg = ReferenceGenome.resolve(vcf_reader.header._indices["reference"][0].value)
+            chrom = vcf_record.CHROM
             pos = vcf_record.POS
             ref = vcf_record.REF
-            alt = (vcf_record.ALT[0] if len(vcf_record.ALT) == 1 else vcf_record.ALT).sequence
-            clnsig = self.record_to_pathogencity_class_func(vcf_record)
-            variation_type = VariationType(vcf_record.var_type)
-            rg = ReferenceGenome.resolve(vcf_reader.metadata["reference"])
-            records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
+            for index, substitution in enumerate(vcf_record.ALT):
+                variation_type = VariationType.resolve(substitution.type)
+                alt = substitution.value
+                clnsig = self.record_to_pathogencity_class_func(index, vcf_record)
+                records.append(EvaluationDataEntry(chrom, pos, ref, alt, clnsig, variation_type, rg))
         return EvaluationData.from_records(records)
+
+    def _open_vcf_file(self, file_path):
+        if str(file_path).endswith(".gz"):
+            return gzip.open(file_path, "rt", encoding="latin-1")
+        return open(file_path, "rt", encoding="latin-1")
 
 
 class ClinVarVCFExtractor(VCFExtractor):
     """ An extractor ClinVAR VCF files based on :class:`~vpmbench.extractor.VCFExtractor`.
     """
 
-    def _extract_pathogencity_class_from_record(self, vcf_record) -> str:
-        vcf_clnsig = vcf_record.INFO["CLNSIG"][0].lower()
+    def _extract_pathogencity_class_from_record(self, index, vcf_record) -> str:
+        vcf_clnsig = vcf_record.INFO["CLNSIG"][index].lower()
         if "benign" in vcf_clnsig or "2" in vcf_clnsig:
             return "benign"
         elif "pathogenic" in vcf_clnsig or "5" in vcf_clnsig:
