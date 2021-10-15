@@ -99,9 +99,12 @@ class VariationType(Enum):
             If the name can not be solved
         """
         name = name.lower()
-        rv = VariationType(name)
-        if rv is not None:
-            return rv
+        try:
+         return VariationType(name)
+        except Exception:
+            pass
+        if name in ("snv"):
+            return VariationType.SNP
         else:
             raise RuntimeError(f"Can't resolve variation type for name {name}")
 
