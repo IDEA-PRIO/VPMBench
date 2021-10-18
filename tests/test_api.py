@@ -2,6 +2,7 @@ import pytest
 
 from vpmbench.api import extract_evaluation_data, load_plugin, load_plugins, invoke_method, invoke_methods, run_pipeline
 from vpmbench.metrics import Sensitivity, Specificity
+from vpmbench.plugin import PythonEntryPoint
 from vpmbench.summaries import ConfusionMatrix, ROCCurve
 
 
@@ -50,13 +51,13 @@ def test_invoke_methods(docker_plugin, python_plugin, evaluation_data_grch37):
 
 
 def test_run_pipeline(grch37_vcf_path, plugin_path):
-    all_plugins = lambda plugin: True
+    all_plugins = lambda plugin: isinstance(plugin.entry_point, PythonEntryPoint)
     summaries = [ConfusionMatrix, ROCCurve]
     metrics = [Specificity, Sensitivity]
     report = run_pipeline(with_data=grch37_vcf_path,
                           reporting=summaries + metrics,
                           using=all_plugins,
-                          plugin_path=plugin_path)
+                          plugin_path=plugin_path, with_flexible_plugins=True)
     assert report is not None
     assert len(report.metrics_and_summaries) == len(summaries + metrics)
 
