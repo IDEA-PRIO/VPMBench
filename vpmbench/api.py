@@ -5,14 +5,16 @@ from pathlib import Path
 from typing import Type, Union, Callable, Any, List, Tuple, Dict, Optional
 
 import yaml
-from pandas import DataFrame
+from pandas import DataFrame, Series
+from pandera.typing import Series
 
 from vpmbench import log
 from vpmbench.config import DEFAULT_PLUGIN_PATH
 from vpmbench.data import EvaluationData, AnnotatedVariantData
+from vpmbench.enums import PathogencityClass
 from vpmbench.extractor import Extractor, ClinVarVCFExtractor
 from vpmbench.metrics import PerformanceMetric
-from vpmbench.plugin import Plugin, PluginBuilder
+from vpmbench.plugin import Plugin, PluginBuilder, Score
 from vpmbench.report import PerformanceReport
 from vpmbench.summaries import PerformanceSummary
 
@@ -204,9 +206,16 @@ def calculate_metric_or_summary(annotated_variant_data: AnnotatedVariantData, ev
 
     """
     log.debug(f"Calculate {report.name()}")
+    scores, new_interpreted_classes = merge_annotaded_variant_and_evaluation_data(annotated_variant_data, evaluation_data)
+    return _calculate_metric_or_summary(scores, new_interpreted_classes, report)
+
+def _calculate_metric_or_summary(scores: List[Score], interpreted_classes: Series,
+                                report: Union[Type[PerformanceMetric], Type[PerformanceSummary]]) -> Dict[Plugin, Any]:
+
+    log.debug(f"Calculate {report.name()}")
     rv = {}
-    for score in annotated_variant_data.scores:
-        rv[score.plugin] = report.calculate(score, evaluation_data.interpreted_classes)
+    for score in scores:
+        rv[score.plugin] = report.calculate(score, interpreted_classes)
     return rv
 
 
@@ -234,9 +243,29 @@ def calculate_metrics_and_summaries(annotated_variant_data: AnnotatedVariantData
     """
     log.info("Calculate reports")
     rv = {}
+    new_scores, interpreted_classes = merge_annotaded_variant_and_evaluation_data(annotated_variant_data, evaluation_data)
     for report in reporting:
-        rv[report.name()] = calculate_metric_or_summary(annotated_variant_data, evaluation_data, report)
+        rv[report.name()] = _calculate_metric_or_summary(new_scores, interpreted_classes, report)
     return rv
+
+
+# auswahl zwischen delete, benign oder pathogenic -> String
+def merge_annotaded_variant_and_evaluation_data(annotated_variant_data: AnnotatedVariantData, evaluation_data: EvaluationData, how_to_handle_with_missing_values: str = "Deletion"):
+    our_data = annotated_variant_data.annotated_variant_data.merge(evaluation_data.table, on="UID")
+    if how_to_handle_with_missing_values == "Deletion":
+        our_data.dropna(inplace=True)
+    elif how_to_handle_with_missing_values == "Imputation-Benign":
+        our_data.fillna(0, inplace=True)
+    elif how_to_handle_with_missing_values == "Imputation-Pathogenic":
+        our_data.fillna(1, inplace=True)
+    new_interpreted_classes = our_data["CLASS"].apply(PathogencityClass.interpret)
+    scores = []
+    for old_score in annotated_variant_data.scores:
+        score_column_name = old_score.plugin.score_column_name
+        score_column = our_data[score_column_name]
+        new_score = Score(old_score.plugin, score_column)
+        scores.append(new_score)
+    return scores, new_interpreted_classes
 
 
 def run_pipeline(with_data: Union[str, Path],
